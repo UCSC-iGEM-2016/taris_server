@@ -1,0 +1,258 @@
+<html>
+
+<head>
+
+    <script defer src="https://code.getmdl.io/1.1.3/material.min.js"></script>
+    <link rel="stylesheet" href="static/menu_style.css" />
+
+
+    <script src="static/raphael-2.1.4.min.js"></script>
+    <script src="static/justgage.js"></script>
+
+</head>
+
+<body>
+
+
+    <!------------------------------- Menu Bar ------------------------------->
+
+    <div class="mdl-layout mdl-js-layout mdl-layout--fixed-drawer">
+        <div class="mdl-layout__drawer">
+
+            <header class="mdl-layout__header">
+                <span class="mdl-layout-title">Taris V1</span>
+            </header>
+            <nav class="mdl-navigation mdl-layout--fixed-drawer mdl-layout-spacer">
+                <div class="mdl-layout-spacer">
+
+                    <a class="mdl-navigation__link current_tab" href="/"><i class="material-icons" role="presentation">build</i> Home</a>
+
+                    <a class="mdl-navigation__link" href="/plots"><i class="mdl-color-text--400 material-icons" role="presentation">assessment</i> History</a>
+
+                    <a class="mdl-navigation__link" href="/params"><i class="mdl-color-text--400 material-icons" role="presentation">settings</i> Parameters</a>
+                </div>
+
+                <div class="mdl-layout-spacer"></div>
+
+
+                <a class="mdl-navigation__link" href="https://igem.soe.ucsc.edu/"><i class="mdl-color-text--400 material-icons" role="presentation">info_outline</i> About</a>
+
+                <a class="mdl-navigation__link" href="/console"><i class="mdl-color-text--400 material-icons" role="presentation">personal_video</i> Console</a>
+
+            </nav>
+        </div>
+
+        <!------------------------- Main Content !--------------------------------->
+
+        <main class="mdl-layout__content">
+
+            <header class="mdl-layout__header">
+
+                 <form method="post" action="{{ url_for('homePage') }}">
+                    <div class="mdl-card__media" style="background:#616161" align="right">
+                        <!--<form action=" # ">-->
+                            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label ">
+                                <!--<form method="post" action="{{ url_for('homePage') }}">-->
+                                    <label class="mdl-textfield__label " for="ph" style="color:#FFFFFF">Login</label>
+                                    <input class="mdl-textfield__input " type="text" style="color:#FFFFFF" id="ph" name="ph" placeholder="Username">
+
+                                    <input class="mdl-textfield__input " type="text" style="color:#FFFFFF" id="ph" name="ph" placeholder="Password">
+                                    <input type="submit"
+                                    style="position: absolute; left: -9999px; width: 1px; height: 1px;"
+                                    tabindex="-1" />
+                            </div>
+
+            </header>
+
+            <div class="mdl-layout__header-row"></div>
+
+            <div class="mdl-grid content-grid ">
+
+
+
+                <!-------- pH and temp -------------->
+
+
+                <div class="mdl-cell mdl-shadow--2dp">
+
+                    <div id="pH_gauge" class="gauge_sensor"></div>
+
+                </div>
+
+
+                <div class="mdl-cell mdl-shadow--2dp">
+
+                    <div id="temp_gauge" class="gauge_sensor"></div>
+
+                </div>
+
+            </div>
+
+
+            <!------- Motors ---------------->
+
+
+            <div class="mdl-grid">
+
+                <div class="mdl-cell mdl-cell--3-col mdl-shadow--2dp">
+
+                    <div id="motor1" class="gauge_motor"></div>
+
+                </div>
+
+
+                <div class="mdl-cell mdl-cell--3-col mdl-shadow--2dp">
+
+                    <div id="motor2" class="gauge_motor"></div>
+
+                </div>
+
+
+                <div class="mdl-cell mdl-cell--3-col mdl-shadow--2dp">
+
+                    <div id="motor3" class="gauge_motor"></div>
+
+                </div>
+
+
+                <div class="mdl-cell mdl-cell--3-col mdl-shadow--2dp">
+
+                    <div id="motor4" class="gauge_motor"></div>
+
+                </div>
+
+            </div>
+
+
+            <!---------- UI to start bioreactor and other cool stuff --------->
+
+            <div class="mdl-grid" style="margin-top: 75px">
+
+                <div class="mdl-cell" style="background: #FFFFFF">
+                    <button id="start-button" class="mdl-button mdl-js-button mdl-button--raised" type="button">Start Bioreactor</button>
+
+                    <div id="notify-start" class="mdl-js-snackbar mdl-snackbar">
+                        <div class="mdl-snackbar__text"></div>
+                        <button class="mdl-snackbar__action" type="button"></button>
+                    </div>
+                    <script>
+                        (function() {
+
+                            'use strict';
+                            var snackbarContainer = document.querySelector('#notify-start');
+                            var startButton = document.querySelector('#start-button');
+
+                            startButton.style.backgroundColor = "#FAFAFA";
+                            startButton.addEventListener('click', function() {
+                                'use strict';
+                                var messageData = "";
+                                if (startButton.style.backgroundColor == "rgb(67, 160, 71)") {
+                                    startButton.style.backgroundColor = "#FAFAFA";
+                                    startButton.textContent = "START BIOREACTOR";
+                                    messageData = "Bioreactor stopped";
+                                } else {
+                                    startButton.style.backgroundColor = "#43A047";
+                                    startButton.textContent = "STOP BIOREACTOR";
+                                    messageData = "Bioreactor started";
+                                }
+                                
+                                var data = {
+                                    message: messageData,
+                                    timeout: 2000,
+                                };
+                                snackbarContainer.MaterialSnackbar.showSnackbar(data);
+                            });
+                        }());
+
+                    </script>
+                </div>
+            </div>
+
+
+
+
+
+
+
+        </main>
+
+</body>
+
+<!------ Scripts for gauges ------------------>
+
+<script>
+    var g5 = new JustGage({
+        id: "pH_gauge",
+        value: {{ph}},
+        min: 0,
+        max: 14,
+        title: "pH",
+        label: "Desired: {{ph}}",
+        levelColorsGradient: true,
+        decimals: 2
+    });
+
+    var g5 = new JustGage({
+        id: "temp_gauge",
+        value: {{temp}},
+        min: 0,
+        max: 100,
+        title: "Temperature °C",
+        label: "Desired: {{temp}}",
+        levelColorsGradient: true,
+        decimals: 2
+    });
+
+    var g5 = new JustGage({
+        id: "motor1",
+        value: 70,
+        min: 0,
+        max: 100,
+        title: "Inflow",
+        label: "Desired: 67",
+        levelColorsGradient: true,
+        decimals: 1,
+        symbol: '%'
+    });
+
+    var g5 = new JustGage({
+        id: "motor2",
+        value: 30,
+        min: 0,
+        max: 100,
+        title: "Outflow",
+        label: "Desired: 67",
+        levelColorsGradient: true,
+        decimals: 1,
+        symbol: '%'
+    });
+
+    var g5 = new JustGage({
+        id: "motor3",
+        value: 5,
+        min: 0,
+        max: 100,
+        title: "NaOH Pump",
+        label: "Desired: 13",
+        levelColorsGradient: true,
+        decimals: 1,
+        symbol: '%'
+    });
+
+    var g5 = new JustGage({
+        id: "motor4",
+        value: 10,
+        min: 0,
+        max: 100,
+        title: "Filter Pump",
+        label: "Desired: 67",
+        levelColorsGradient: true,
+        decimals: 1,
+        symbol: '%'
+    });
+
+</script>
+
+<!-------------------------------------------->
+
+</html>
