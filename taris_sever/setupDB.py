@@ -1,9 +1,24 @@
-import os
-import sys
-from sqlalchemy import Column, ForeignKey, Integer, String, Float
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
-from sqlalchemy import create_engine
+#############################################################
+# setupDB.py:
+#   The first application that creates our Bioreactor and changeLog databases.
+#
+#Date: August 8, 2016
+#
+#Written by:
+#   Andrew Blair
+#   Colin Hortman
+#   Austin York
+#   Lon Blauvelt
+#   Henry Hinton
+#
+#Description:
+#
+#
+#
+################################################################
+
+
+
 
 from flask import Flask
 from flask.ext.sqlalchemy import SQLAlchemy
@@ -30,11 +45,10 @@ class bioDec (db.Model):
     outFlow = db.Column('outFlow', db.Integer)
     purifier = db.Column('purifier', db.Integer)
 
-    def __init__(self, id, timeData, temperature, pH, NaOH, heater, inFlow, outFlow, purifier):
+    def __init__(self, timeData, temperature, pH, NaOH, heater, inFlow, outFlow, purifier):
         '''
         Constructor method that allows user to create new example objects to add to database.
         '''
-        self.id = id
         self.timeData = timeData
         self.temperature = temperature
         self.pH = pH
@@ -61,11 +75,22 @@ class changeLog(db2.Model):
 	__tablename__ = 'userInfo'
 
 	# timeLog will take the server time when a user changes a parameter. Similar to timeData in bioDec.
-	timeLog = db.Column('timeLog', db2.Integer, primary_key=True, )
-	username = Column('username', db2.String)
-	password = Column('password', db2.String)
-	timeOn = Column('timeOn', db2.String)
-	changeValue = Column('changeValue', db2.String)
-	valueSet_to = Column('valueSet_to',db2.String)
+	timeLog = db2.Column('timeLog', db2.Integer, primary_key=True, )
+	username = db2.Column('username', db2.String)
+	password = db2.Column('password', db2.String)
+	timeOn = db2.Column('timeOn', db2.String)
+	changeValue = db2.Column('changeValue', db2.String)
+	valueSet_to = db2.Column('valueSet_to',db2.String)
+
+	def __init__(self, timeLog, username, password, timeOn, changeValue, valueSet_to):
+		'''
+		Constructor method that allows user to create new example objects to add to database.
+		'''
+		self.timeLog = timeLog
+		self.username = username
+		self.password = password
+		self.timeOn = timeOn
+		self.changeValue = changeValue
+		self.valueSet_to = valueSet_to
 
 	db2.create_all()
