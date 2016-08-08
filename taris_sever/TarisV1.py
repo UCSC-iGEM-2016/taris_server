@@ -37,14 +37,16 @@ setData = {
   'temp': '6',
   'timeHoldFor': '60'
 }
+# Equivalent to getting info from DB
 try:
-    myUserData = pickle.load(open('mySetThings.p', 'rb'))
-    setData['pH'] = myUserData['pH']
-    setData['temp'] = myUserData['temp']
-    tryLoad = True
+  myUserData = pickle.load(open('mySetThings.p', 'rb'))
+  setData['pH'] = myUserData['pH']
+  setData['temp'] = myUserData['temp']
+  tryLoad = True
 except:
-    print('Error loading setData pickle.')
-    pass
+  pickle.dump(setData, open('mySetThings.p', 'wb'))
+  print('Created mySetThings.p pickle.') 
+  pass
 
 
 
