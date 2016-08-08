@@ -30,7 +30,13 @@
 #####################################################################
 
 from flask import Flask, render_template, request, jsonify
+import json
 import pickle
+import time
+
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from setupDB import bioDec, Base, logBase
 
 setData = {
   'pH': '5',
@@ -57,27 +63,75 @@ class Taris_SW:
 
     def __init__ (self):
         pass
+      
+      
+    ####################################
+    #These methods are database engines and access, see descriptions
+    def makeBioreactorEngine():
+      '''
+      session maker for Bioreactor.db
+      return: database session for Bioreactor.db
+      '''
+      engine = create_engine('sqlite:///Bioreactor.db')  # databaseName.db goes here
+      Base.metadata.bind = engine
+      DBSession = sessionmaker(bind=engine)
+      BioreactorDBsession = DBSession()
+      return BioreactorDBsession
 
+    def makeChangeEngine():
+      '''
+      session maker for Bioreactor.db
+      return: database session for Bioreactor.db
+      '''
+      newEngine = create_engine('sqlite://changeLog.db')
+      logBase.metadata.bind = newEngine
+      DBSession = sessionmaker(bind=newEngine)
+      changeSession = DBSession()
+      return changeSession
 
+    def getValues():
+      '''
+      WARNING : Gets all values of the database
+      return: all database entries
+      '''
+      session = Taris_SW.makeBioreactorEngine()
+      allBioData = session.query(bioDec).all()
+      return allBioData
+
+    def getLast():
+      '''
+      Gets the last entry in the database.
+      return: last entry in the databsee
+      '''
+      session = Taris_SW.makeBioreactorEngine()
+      # http://stackoverflow.com/questions/8551952/how-to-get-last-record
+      # last was inspired/copied from Stackoverflow user: miku, thank you miku
+      last = session.query(bioDec).order_by(bioDec.timedata.desc()).first()
+      return last
 
     @app.route('/', methods=['GET'])
     def homePage():
-        '''GETS and POSTS the main homepage of the website along with the data info'''
+      '''
+      GETS and POSTS the main homepage of the website along with the data info
+      :return: index.html with passed currentSetPH
+      '''
+      print('Going to homePage (index.html)')
+      try:
+          # Get the last data that was changed by user
+          lastData = Taris_SW.getValues()
+          print('got lastData')
+          currentSetPH = lastData[-1].pH
+          currentSetTemp = lastData[-1].temperature
+          print('last data ph and temp grabbed')
+      except:
+          print('Could not query data in /  (home)')
+          currentSetPH = 7
+          currentSetTemp = 50
+          print('setting the ph to 7 and temp to 50 because no database')
+          pass
 
-        tryLoad = False
-        try:
-            myUserData = pickle.load(open('mySetThings.p', 'rb'))           #loads the current 'mySetThings.p' pickle
-            ph = myUserData['pH']                                           #that was originally created
-            temp = myUserData['temp']
-            tryLoad = True
-        except:
-            pass
-        if tryLoad == False:
-            ph = 7
-            temp = 50
-
-
-        return render_template('index.html', ph=ph, temp=temp)
+      print('rendering index.html')
+      return render_template('index.html', ph=currentSetPH, temp=currentSetTemp)
 
     #############################################################################################
     #This part of the program was inspired by Simba.
@@ -113,16 +167,59 @@ class Taris_SW:
         print('Set values/protocol changed by: ' + currentUser)
         return 'success'
 
-    @app.route('/currentRecieve')
+    @app.route('/currentRecieve', methods=["POST"])
     def currentRecieve():
-        pass
+        '''
+        currentRecieve is called when the Raspberry Pi sends a json to the server
+        This post request is handled by loading the json data and committing it to the Bioreactor.DB
+        :return: A string 'success' is returned as a check that the data was sent to the server
+        '''
+        print('Recieved data at: /currentRecieve.')
+        # Process a JSON. Put JSON data in a database.
+        try:
+            myJSON = request.get_json(force=True) # myJSON is string not json
+            print('request contained a json')
+            #myJSON.json()
+            realJSON = json.loads(myJSON)
+            print('json loaded')
+            #attachME = str(realJSON['payload']['pH'])
+            #print('myJSON[payload][pH] is:' + attachME) # insert to test
+
+            ######### Put things into the DB ###############--#
+            mytime = time.strftime('%D %H:%M:%S') # get server time
+
+            temp = realJSON['payload']['temp']
+            mypH = realJSON['payload']['pH']
+            NaOH = 1
+            heater = 1
+            inFlow = 1
+            outFlow = 1
+            purifier = 1
+
+            new_data = bioDec(temperature=temp, pH=mypH, timeData=mytime,
+                                       NaOH=NaOH, heater=heater, inFlow=inFlow,
+                                       outFlow=outFlow, purifier=purifier)
+            print('new data made')
+            # mydatetime = mydatetimer(mytime)
+            # new_data = Bioreactor_Data(temperature= temp,pH = mypH,timedata=mydatetime)
+            session = Taris_SW.makeBioreactorEngine()
+            session.add(new_data)
+            #session.add(new_data)
+            session.commit()
+            print('Recieved data added to database.')
+        except:
+            print("currentRecieve was called but the data was not sent to the database.")
+
+        print('I finished currentRecieve') # The server mangager now knows that this method has finished.
+        return 'success'
 
 
     @app.route('/setToPIREAD')
     def setToPIREAD():
-        global setData
-        mySetToData= pickle.load(open('mySetThings.p', 'rb'))
-        return jsonify(setData)
+      '''
+      Get the last value in changeLog, tell the pi what to set to
+      '''
+      pass
     #############################################################################################
 
 
