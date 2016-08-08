@@ -96,13 +96,16 @@ class Taris_SW:
         # This method will change the global setData variable and will create
         # a pickle to store it as well.
         #   The
-        global setData
-        setData['userdata'] = request.form.get('data')
-        setData['pH'] = request.form.get('pH')
-        setData['temp'] = request.form.get('temp')
-        setData['timeHoldFor'] = request.form.get('timeHoldFor')
+        if request.form.get('pass') == 'pavlesucks':
+            global setData
+            setData['userdata'] = request.form.get('data')
+            setData['pH'] = request.form.get('pH')
+            setData['temp'] = request.form.get('temp')
+            setData['timeHoldFor'] = request.form.get('timeHoldFor')
 
-        pickle.dump(setData, open('mySetThings.p', 'wb'))
+            pickle.dump(setData, open('mySetThings.p', 'wb'))
+        else:
+            print('Wrong password')
 
 
         #goGetUser = someGetOnlineUserCall()
@@ -175,7 +178,7 @@ class Taris_SW:
             loadSetPH = 77
             pass
 
-        return render_template('paramsAJAX727.html', setPH = loadSetPH, loadTemp = loadSetTemp )
+        return render_template('testParams.html', setPH = loadSetPH, loadTemp = loadSetTemp )
 
 
 myTaris=Taris_SW()
