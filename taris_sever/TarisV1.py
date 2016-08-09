@@ -33,7 +33,7 @@ from flask import Flask, render_template, request, jsonify
 import json
 import time
 
-from setupDB import bioDec, changeLog, Base, logBase, makeBioreactorEngine, makeChangeEngine, getProtocol, getValues
+from setupDB import bioDec, changeLog, Base, logBase, makeBioreactorEngine, makeChangeEngine, getProtocol, getValues, getLast
 
 app = Flask(__name__)
 
