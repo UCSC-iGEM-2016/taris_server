@@ -38,23 +38,6 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from setupDB import bioDec, changeLog, Base, logBase
 
-setData = {
-  'pH': '5',
-  'temp': '6',
-  'timeHoldFor': '60'
-}
-# Equivalent to getting info from DB
-try:
-  myUserData = pickle.load(open('mySetThings.p', 'rb'))
-  setData['pH'] = myUserData['pH']
-  setData['temp'] = myUserData['temp']
-  tryLoad = True
-except:
-  pickle.dump(setData, open('mySetThings.p', 'wb'))
-  print('Created mySetThings.p pickle.') 
-  pass
-
-
 
 app = Flask(__name__)
 
