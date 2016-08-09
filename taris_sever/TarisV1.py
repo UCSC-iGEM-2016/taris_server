@@ -234,52 +234,52 @@ class Taris_SW:
 
         return render_template('testParams.html', setPH = loadSetPH, loadTemp = loadSetTemp )
 
-  ##########################$$$ Database Access Methods $$$##########################
-  # These methods are database engines and access, see descriptions
-  def makeBioreactorEngine():
-      '''
-      session maker for Bioreactor.db
-      return: database session for Bioreactor.db
-      '''
-      engine = create_engine('sqlite:///Bioreactor.db')  # databaseName.db goes here
-      Base.metadata.bind = engine
-      DBSession = sessionmaker(bind=engine)
-      BioreactorDBsession = DBSession()
-      return BioreactorDBsession
-      
-  def makeChangeEngine():
-      '''
-      session maker for changeLog.db
-      return: database session for changLog.db
-      '''
-      newEngine = create_engine('sqlite:///changeLog.db')
-      logBase.metadata.bind = newEngine
-      DBSession = sessionmaker(bind=newEngine)
-      changeSession = DBSession()
-      return changeSession
+##########################$$$ Database Access Methods $$$##########################
+    # These methods are database engines and access, see descriptions
+    def makeBioreactorEngine():
+        '''
+        session maker for Bioreactor.db
+        return: database session for Bioreactor.db
+        '''
+        engine = create_engine('sqlite:///Bioreactor.db')  # databaseName.db goes here
+        Base.metadata.bind = engine
+        DBSession = sessionmaker(bind=engine)
+        BioreactorDBsession = DBSession()
+        return BioreactorDBsession
+    
+    def makeChangeEngine():
+        '''
+        session maker for changeLog.db
+        return: database session for changLog.db
+        '''
+        newEngine = create_engine('sqlite:///changeLog.db')
+        logBase.metadata.bind = newEngine
+        DBSession = sessionmaker(bind=newEngine)
+        changeSession = DBSession()
+        return changeSession
 
+    def getValues():
+        '''
+        WARNING : Gets all values of the database
+        return: all database entries
+        '''
+        session = Taris_SW.makeBioreactorEngine()
+        allBioData = session.query(bioDec).all()
+        return allBioData
 
-  def getValues():
-      '''
-      WARNING : Gets all values of the database
-      return: all database entries
-      '''
-      session = Taris_SW.makeBioreactorEngine()
-      allBioData = session.query(bioDec).all()
-      return allBioData
+    def getLast():
+        '''
+        Gets the last entry in the database.
+        return: last entry in the databsee
+        '''
+        session = Taris_SW.makeBioreactorEngine()
+        # http://stackoverflow.com/questions/8551952/how-to-get-last-record
+        # last was inspired/copied from Stackoverflow user: miku, thank you miku
+        last = session.query(bioDec).order_by(bioDec.timedata.desc()).first()
+        return last
+##########################$$$ Database Access Methods $$$##########################
 
-
-  def getLast():
-      '''
-      Gets the last entry in the database.
-      return: last entry in the databsee
-      '''
-      session = Taris_SW.makeBioreactorEngine()
-      # http://stackoverflow.com/questions/8551952/how-to-get-last-record
-      # last was inspired/copied from Stackoverflow user: miku, thank you miku
-      last = session.query(bioDec).order_by(bioDec.timedata.desc()).first()
-      return last
-  ##########################$$$ Database Access Methods $$$##########################
+ 
 
 
 myTaris=Taris_SW()
