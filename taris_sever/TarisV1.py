@@ -36,7 +36,7 @@ import time
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from setupDB import bioDec, Base, logBase
+from setupDB import bioDec, changeLog, Base, logBase
 
 setData = {
   'pH': '5',
