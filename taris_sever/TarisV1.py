@@ -113,18 +113,15 @@ class Taris_SW:
           # If the user is validated by the password then
           setPH = request.form.get('pH')
           setTemp = request.form.get('temp')
-          setHoldrequest = request.form.get('timeHoldFor')
+          timeHold = request.form.get('timeHoldFor')
           #print('ph, temp, and hold time were got')
           ######### Put things into the DB ###############--#
           mytime = time.strftime('%D %H:%M:%S')  # get server time in String form
           #print('server time was got:' + mytime)
           user = 'colintest'
           passcode = 'KingPickler'
-          timeOn = 'Whenever I want fool'
-          change = 'True'
-          values = 'pH:' + str(setPH) + ';temp:' + str(setTemp)
           # Create changeLog.db object to be added
-          new_data = changeLog(timeLog=mytime, username=user, password=passcode, timeOn=timeOn, changeValue=change, valueSet_to=values)
+          new_data = changeLog(timeLog=mytime, username=user, password=passcode, setPH=setPH, setTemp=setTemp, timeHold=timeHold)
           #print('new data made for changeLog.db')
           session = Taris_SW.makeChangeEngine()  # Get a session from the method that makes sessions
           #print('Making session to connect to changeLog.db')
