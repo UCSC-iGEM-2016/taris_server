@@ -58,9 +58,10 @@ class changeLog(logBase):
 	timeLog = Column('timeLog', String, primary_key=True)
 	username = Column('username', String)
 	password = Column('password', String)
-	timeOn = Column('timeOn', String)
-	changeValue = Column('changeValue', String)
-	valueSet_to = Column('valueSet_to',String)
+	setPH = Column('setPH', Integer)
+    	setTemp = Column('setTemp', Integer)
+    	timeHold = Column('timeHold', Integer)
+
 
 engine = create_engine('sqlite:///Bioreactor.db')
 Base.metadata.create_all(engine)
