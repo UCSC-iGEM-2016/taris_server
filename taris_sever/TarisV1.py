@@ -243,18 +243,15 @@ class Taris_SW:
     @app.route('/params')
     def paramsPage():
         '''GETS parameter page'''
-        #setPH = pickle.load()
         try:
-            myUserData = pickle.load(open('mySetThings.p', 'rb'))
-            loadSetPH = myUserData['pH']
-            loadSetTemp = myUserData['temp']
-            tryLoad = True
+          lastProto = Taris_SW.getProtocol()
+          loadSetPH = lastProto.setPH
+          loadSetTemp = lastProto.setTemp
         except:
-            print('No pickle found. /params')
-            loadSetTemp = 1000
-            loadSetPH = 77
-            pass
-
+          print('Data failed to load from DB.')
+          loadSetTemp = 'FAIL'
+          loadSetPH = 'FAIL'
+          
         return render_template('testParams.html', setPH = loadSetPH, loadTemp = loadSetTemp )
 
 ##########################$$$ Database Access Methods $$$##########################
