@@ -75,8 +75,8 @@ class Taris_SW:
           # Get the last data that was changed by user
           lastData = Taris_SW.getValues()
           print('got lastData')
-          currentSetPH = lastData[-1].pH
-          currentSetTemp = lastData[-1].temperature
+          currentSetPH = lastData[-1].setPH
+          currentSetTemp = lastData[-1].setTemp
           print('last data ph and temp grabbed')
       except:
           print('Could not query data in /  (home)')
