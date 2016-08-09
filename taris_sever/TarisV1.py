@@ -101,28 +101,51 @@ class Taris_SW:
 
     @app.route('/setProtocol', methods=['POST'])
     def setProtocol():
-        #This method will be ran on request of the Params page.
-        # This method will change the global setData variable and will create
-        # a pickle to store it as well.
-        #   The
-        if request.form.get('pass') == 'pavlesucks':
-            global setData
-            setData['userdata'] = request.form.get('data')
-            setData['pH'] = request.form.get('pH')
-            setData['temp'] = request.form.get('temp')
-            setData['timeHoldFor'] = request.form.get('timeHoldFor')
-
-            pickle.dump(setData, open('mySetThings.p', 'wb'))
-        else:
-            print('Wrong password')
-
-
-        #goGetUser = someGetOnlineUserCall()
-        currentUser = 'Colin'
-        print('Set values/protocol changed by: ' + currentUser)
-        return 'success'
-
-    
+      '''
+      setProtocol is the POST method of the paramas page.
+      if the password is correct then the data will be committed to the changeLogDB.
+      :return: A string 'success' is returned as a check that the data was processed to the db
+      '''
+      # Process a JSON. Put JSON data in a database.
+      try:
+        # try the passcode
+        if request.form.get('pass') == 'pavlesucks':  # Check to see if the user knows the password.
+          # If the user is validated by the password then
+          setPH = request.form.get('pH')
+          setTemp = request.form.get('temp')
+          setHoldrequest = request.form.get('timeHoldFor')
+          #print('ph, temp, and hold time were got')
+          ######### Put things into the DB ###############--#
+          mytime = time.strftime('%D %H:%M:%S')  # get server time in String form
+          #print('server time was got:' + mytime)
+          user = 'colintest'
+          passcode = 'KingPickler'
+          timeOn = 'Whenever I want fool'
+          change = 'True'
+          values = 'pH:' + str(setPH) + ';temp:' + str(setTemp)
+          # Create changeLog.db object to be added
+          new_data = changeLog(timeLog=mytime, username=user, password=passcode, timeOn=timeOn, changeValue=change, valueSet_to=values)
+          #print('new data made for changeLog.db')
+          session = Taris_SW.makeChangeEngine()  # Get a session from the method that makes sessions
+          #print('Making session to connect to changeLog.db')
+           session.add(new_data)  # Add data to changeLog database
+          #print('data added to changelog db, please commit')
+          # session.add(new_data)
+          try:
+            session.commit()
+            #print('Recieved data added to changeLog.db.')
+            currentUser = 'Colin'
+            print('Set values/protocol changed by: ' + currentUser)
+          except:
+            print('Error in committing data.')
+        `else:
+          # The password is false
+          print('The password was incorrect')
+          # Play a gif that is about getting passwords wrong
+      except:
+        print('Data was not added because an error was thrown in /setProtocol')
+      print('I finished currentRecieve')  # The server mangager now knows that this method has finished.
+      return 'success'
     
     @app.route('/currentRecieve', methods=["POST"])
     def currentRecieve():
