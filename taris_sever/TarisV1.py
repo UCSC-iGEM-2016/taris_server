@@ -280,6 +280,16 @@ class Taris_SW:
         DBSession = sessionmaker(bind=newEngine)
         changeSession = DBSession()
         return changeSession
+    def getProtocol():
+      '''
+      Returns the last protocol that was committed. (most recent set ph and temp here)
+      :return: current protocol in the changelog DB
+      '''
+      session = Taris_SW.makeChangeEngine()
+      # http://stackoverflow.com/questions/8551952/how-to-get-last-record
+      # last was inspired/copied from Stackoverflow user: miku, thank you miku
+      last = session.query(changeLog).order_by(changeLog.timeLog.desc()).first()
+      return last
 
     def getValues():
         '''
