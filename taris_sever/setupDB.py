@@ -55,7 +55,7 @@ class changeLog(logBase):
 	__tablename__ = 'userInfo'
 
 	# timeLog will take the server time when a user changes a parameter. Similar to timeData in bioDec.
-	timeLog = Column('timeLog', Integer, primary_key=True)
+	timeLog = Column('timeLog', String, primary_key=True)
 	username = Column('username', String)
 	password = Column('password', String)
 	timeOn = Column('timeOn', String)
