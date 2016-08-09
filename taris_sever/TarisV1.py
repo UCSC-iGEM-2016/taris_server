@@ -128,7 +128,7 @@ class Taris_SW:
           #print('new data made for changeLog.db')
           session = Taris_SW.makeChangeEngine()  # Get a session from the method that makes sessions
           #print('Making session to connect to changeLog.db')
-           session.add(new_data)  # Add data to changeLog database
+          session.add(new_data)  # Add data to changeLog database
           #print('data added to changelog db, please commit')
           # session.add(new_data)
           try:
@@ -138,7 +138,7 @@ class Taris_SW:
             print('Set values/protocol changed by: ' + currentUser)
           except:
             print('Error in committing data.')
-        `else:
+        else:
           # The password is false
           print('The password was incorrect')
           # Play a gif that is about getting passwords wrong
