@@ -73,10 +73,10 @@ class Taris_SW:
       print('Going to homePage (index.html)')
       try:
           # Get the last data that was changed by user
-          lastData = Taris_SW.getValues()
+          lastData = Taris_SW.getProtocol()
           print('got lastData')
-          currentSetPH = lastData[-1].setPH
-          currentSetTemp = lastData[-1].setTemp
+          currentSetPH = lastData.setPH
+          currentSetTemp = lastData.setTemp
           print('last data ph and temp grabbed')
       except:
           print('Could not query data in /  (home)')
