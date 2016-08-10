@@ -33,7 +33,8 @@ from flask import Flask, render_template, request, jsonify
 import json
 import time
 
-from setupDB import Base, bioDec, logBase, changeLog, makeBioreactorSession, makeChangeSession, getProtocol, getValues, getLast
+from setupDB import bioDec, changeLog, Base, logBase
+from setupDB import makeBioreactorEngine, makeChangeEngine, getProtocol, getValues, getLast
 
 app = Flask(__name__)
 
@@ -49,22 +50,31 @@ class Taris_SW:
         :return: index.html with passed currentSetPH
         '''
         print('Going to homePage (index.html)')
-        try:
-            # Get the last data that was changed by user
+        try: # Get the last protocol that was changed by user (setTo values
             lastData = getProtocol()
-            print('got lastData')
+            #print('got lastData')
             currentSetPH = lastData.setPH
             currentSetTemp = lastData.setTemp
-            print('last data ph and temp grabbed')
+            #print('last data ph and temp grabbed')
         except:
             print('Could not query data in /  (home)')
             currentSetPH = 7
             currentSetTemp = 50
-            print('setting the ph to 7 and temp to 50 because no database')
+            print('setting the ph to 7 and temp to 50 because error in /')
             pass
-
+        try: # Get the most rececnt bioreactor data
+            lastBRdata = getLast()
+            print('getLast succes')
+            if lastBRdata == None:
+                print('No data has been sent from PI, please add to DB ')
+            currentpH = lastBRdata.pH
+            currentTemp = lastBRdata.temperature
+        except:
+            currentpH = 777
+            currentTemp = 777
+            print('Error thown in second try block of / (homepage)')
         print('rendering index.html')
-        return render_template('index.html', ph=currentSetPH, temp=currentSetTemp)
+        return render_template('index.html', setPH = currentSetPH, setTemp = currentSetTemp, ph=currentpH, temp=currentTemp)
 
     #############################################################################################
     # This part of the program was inspired by Simba.
@@ -102,7 +112,7 @@ class Taris_SW:
                 new_data = changeLog(timeLog=mytime, username=user, password=passcode, setPH=setPH, setTemp=setTemp,
                                      timeHold=timeHold)
                 # print('new data made for changeLog.db')
-                session = makeChangeSession()  # Get a session from the method that makes sessions
+                session = makeChangeEngine()  # Get a session from the method that makes sessions
                 # print('Making session to connect to changeLog.db')
                 session.add(new_data)  # Add data to changeLog database
                 # print('data added to changelog db, please commit')
@@ -158,7 +168,7 @@ class Taris_SW:
             print('new data made')
             # mydatetime = mydatetimer(mytime)
             # new_data = Bioreactor_Data(temperature= temp,pH = mypH,timedata=mydatetime)
-            session = makeBioreactorSession()
+            session = makeBioreactorEngine()
             session.add(new_data)
             # session.add(new_data)
             session.commit()
