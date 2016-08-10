@@ -47,8 +47,12 @@
                 <br>
                 Hold for H:M<input type="text" id="timeHoldFor">Defult: Infinite</input>
                 <br>
+                Who are you<input type="text" id="user" placeholder = 'Jane Doe' ></input>
+                <br>
                 Enter Passcode <input type="text" id="pass"></input>
                 <br>
+
+
                 <button id="set">Set pH/temp hold protocol</button>
 
                 <!-----------------ajax test call to set parameters---------------->
@@ -57,7 +61,7 @@
                     $.ajax({
                       url: "setProtocol",
                       method: "POST",
-                      data: {pH: $("#pH").val(), temp: $("#temp").val(), timeHoldFor:$("#timeHoldFor").val(), pass:$("#pass").val() },
+                      data: {pH: $("#pH").val(), temp: $("#temp").val(), timeHoldFor:$("#timeHoldFor").val(), pass:$("#pass").val(), user:$("#user").val()},
                       success: function(result){}
                     });
                 });
