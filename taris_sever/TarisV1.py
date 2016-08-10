@@ -34,7 +34,7 @@ import json
 import time
 
 from setupDB import bioDec, changeLog, Base, logBase
-from setupDB import makeBioreactorEngine, makeChangeEngine, getProtocol, getValues, getLast
+from setupDB import makeBioreactorSession, makeChangeSession, getProtocol, getValues, getLast
 
 app = Flask(__name__)
 
