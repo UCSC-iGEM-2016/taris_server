@@ -33,7 +33,7 @@ from flask import Flask, render_template, request, jsonify
 import json
 import time
 
-from setupDB import bioDec, changeLog, Base, logBase, makeBioreactorEngine, makeChangeEngine, getProtocol, getValues, getLast
+from setupDB import Base, bioDec, logBase, changeLog, makeBioreactorSession, makeChangeSession, getProtocol, getValues, getLast
 
 app = Flask(__name__)
 
@@ -102,7 +102,7 @@ class Taris_SW:
                 new_data = changeLog(timeLog=mytime, username=user, password=passcode, setPH=setPH, setTemp=setTemp,
                                      timeHold=timeHold)
                 # print('new data made for changeLog.db')
-                session = makeChangeEngine()  # Get a session from the method that makes sessions
+                session = makeChangeSession()  # Get a session from the method that makes sessions
                 # print('Making session to connect to changeLog.db')
                 session.add(new_data)  # Add data to changeLog database
                 # print('data added to changelog db, please commit')
@@ -158,7 +158,7 @@ class Taris_SW:
             print('new data made')
             # mydatetime = mydatetimer(mytime)
             # new_data = Bioreactor_Data(temperature= temp,pH = mypH,timedata=mydatetime)
-            session = makeBioreactorEngine()
+            session = makeBioreactorSession()
             session.add(new_data)
             # session.add(new_data)
             session.commit()
