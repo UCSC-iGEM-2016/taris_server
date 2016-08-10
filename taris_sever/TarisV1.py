@@ -101,11 +101,11 @@ class Taris_SW:
                 setPH = request.form.get('pH')
                 setTemp = request.form.get('temp')
                 timeHold = request.form.get('timeHoldFor')
+                user = request.form.get('user')
                 # print('ph, temp, and hold time were got')
                 ######### Put things into the DB ###############--#
                 mytime = time.strftime('%D %H:%M:%S')  # get server time in String form
                 # print('server time was got:' + mytime)
-                user = 'colintest'
                 passcode = 'KingPickler'
                 # Create changeLog.db object to be added
                 new_data = changeLog(timeLog=mytime, username=user, password=passcode, setPH=setPH, setTemp=setTemp,
@@ -120,7 +120,7 @@ class Taris_SW:
                     session.commit()
                     # print('Recieved data added to changeLog.db.')
                     currentUser = 'Colin'
-                    print('Set values/protocol changed by: ' + currentUser)
+                    print('Set values/protocol changed by: ' + user)
                 except:
                     print('Error in committing data.')
             else:
