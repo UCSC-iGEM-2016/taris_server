@@ -94,7 +94,6 @@ class Taris_SW:
         if the password is correct then the data will be committed to the changeLogDB.
         :return: A string 'success' is returned as a check that the data was processed to the db
         '''
-        # Process a JSON. Put JSON data in a database.
         try:
             # try the passcode
             if request.form.get('pass') == 'pavlesucks':  # Check to see if the user knows the password.
