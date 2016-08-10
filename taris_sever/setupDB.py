@@ -130,6 +130,6 @@ def getLast():
     lastSession = makeBioreactorEngine()
     # http://stackoverflow.com/questions/8551952/how-to-get-last-record
     # last was inspired/copied from Stackoverflow user: miku, thank you miku
-    last = lastSession.query(bioDec).order_by(bioDec.timedata.desc()).first()
+    last = lastSession.query(bioDec).order_by(bioDec.timeData.desc()).first()
     return last
 
