@@ -62,7 +62,11 @@
                       url: "setProtocol",
                       method: "POST",
                       data: {pH: $("#pH").val(), temp: $("#temp").val(), timeHoldFor:$("#timeHoldFor").val(), pass:$("#pass").val(), user:$("#user").val()},
-                      success: function(result){}
+                      success: function(result){
+                          if(result == "success"){
+                              alert('request sent!')
+                          }
+                      }
                     });
                 });
                 </script>
