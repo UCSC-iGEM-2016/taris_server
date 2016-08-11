@@ -103,7 +103,7 @@ class Taris_SW:
 
             ######### Put things into the DB ###############--#
             mytime = time.strftime('%D %H:%M:%S')  # get server time
-
+            mytime = mydatetimer(mytime)
             temp = realJSON['payload']['temp']
             mypH = realJSON['payload']['pH']
             NaOH = 1
@@ -164,7 +164,7 @@ class Taris_SW:
             '''Put all relevant data in lists'''
             yVals.append(data.pH)
             print('append pH success')
-            datotimer = mydatetimer(data.timeData)
+            datotimer = data.timeData
             print("datotimer made")
             xVals.append(datotimer)
         # Graph lists using class found in setupDB
@@ -270,4 +270,4 @@ class Taris_SW:
 myTaris = Taris_SW()
 
 if __name__ == '__main__':
-    app.run('0.0.0.0')
+    app.run()
