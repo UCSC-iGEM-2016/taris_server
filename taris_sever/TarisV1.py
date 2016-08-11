@@ -78,10 +78,25 @@ class Taris_SW:
         print('rendering index.html')
         return render_template('index.html', setPH = currentSetPH, setTemp = currentSetTemp, ph=currentpH, temp=currentTemp)
 
-    @app.route('/receive')
+    @app.route('/currentPost')
     def hello_world():
-        global data
-        return jsonify(data)
+        try:
+            lastProto = getProtocol()
+            loadSetPH = lastProto.setPH
+            loadSetTemp = lastProto.setTemp
+            loadUser = lastProto.username
+        except:
+            print('Data failed to load from DB in /currentPost')
+            loadSetTemp = 'FAIL'
+            loadSetPH = 'FAIL'
+        postThis = {
+            'comment' : "Hey bioreactor, this is the current desired things and user info.",
+            'header' : {'toPIfromServer_sendSensorParams': True, 'date': time.strftime('%D %H:%M:%S')},
+            'payload' : {'des_pH': loadSetPH, 'des_temp': loadSetTemp, 'user_changing': loadUser}
+        }
+
+        print(postThis)
+        return jsonify(postThis)
 
     @app.route('/currentRecieve', methods=["POST"])
     def currentRecieve():
@@ -129,12 +144,6 @@ class Taris_SW:
         print('I finished currentRecieve')  # The server mangager now knows that this method has finished.
         return 'success'
 
-    @app.route('/setToPIREAD')
-    def setToPIREAD():
-        '''
-        Get the last value in changeLog, tell the pi what to set to
-        '''
-        pass
 
     #############################################################################################
 
@@ -158,14 +167,14 @@ class Taris_SW:
         '''Make and display a pH plot vs time'''
         print('pH plot requested')
         allBRdata = getValues() # replace with last 2 mins, not all
-        print('got the all of BR data')
+        #print('got the all of BR data')
         xVals, yVals = [], []
         for data in allBRdata:
             '''Put all relevant data in lists'''
             yVals.append(data.pH)
-            print('append pH success')
+            #print('append pH success')
             datotimer = data.timeData
-            print("datotimer made")
+            #print("datotimer made")
             xVals.append(datotimer)
         # Graph lists using class found in setupDB
         myGraphObject = graphicBR('pH', xVals, yVals)
