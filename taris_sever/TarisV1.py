@@ -240,9 +240,22 @@ class Taris_SW:
         return 'success'
 
 
+    @app.route('/dataHistory')
+    def dataHistory():
+        return render_template('dataHistory.html')
+
+
+    @app.route('/getHistoryData', methods=['POST'])
+    def getHistroyData():
+        #  data: {day: $("#day").val(), start: $("#start").val(), end:$("#end").val()},
+        day = request.form.get('day')
+        start = request.form.get('start')
+        end = request.form.get('end')
+        print("requested data from: " + str(day) + " " + str(start) + " " + str(end))
+        return 'success'
 
 
 myTaris = Taris_SW()
 
 if __name__ == '__main__':
-    app.run('0.0.0.0')
+    app.run()
