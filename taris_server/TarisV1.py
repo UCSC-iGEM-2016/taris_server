@@ -184,8 +184,24 @@ class Taris_SW:
 
     @app.route('/plotsTemp')
     def tempPage():
+        '''Make and display a temp plot vs time'''
+        print('temp plot requested')
+        allBRdata = getValues() # replace with last 2 mins, not all
+        #print('got the all of BR data')
+        xVals, yVals = [], []
+        for data in allBRdata:
+            '''Put all relevant data in lists'''
+            yVals.append(data.temperature)
+            #print('append pH success')
+            datotimer = data.timeData
+            #print("datotimer made")
+            xVals.append(datotimer)
+        # Graph lists using class found in setupDB
+        myGraphObject = graphicBR('Temperature', xVals, yVals)
+        tempScript, tempDiv = myGraphObject.makeLineGraph()
+        #print(pHDiv)
+        return render_template('tempPlotBokeh.html', tempDiv = tempDiv, tempScript = tempScript)
 
-        return render_template('tempPlots.html')
 
     @app.route('/plotsMotors')
     def motorsPage():
