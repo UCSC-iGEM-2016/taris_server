@@ -242,13 +242,13 @@ class Taris_SW:
                 # If the user is validated by the password then
                 setPH = request.form.get('pH')
                 setTemp = request.form.get('temp')
-                timeHold = request.form.get('timeHoldFor')
                 user = request.form.get('user')
                 # print('ph, temp, and hold time were got')
                 ######### Put things into the DB ###############--#
                 mytime = time.strftime('%D %H:%M:%S')  # get server time in String form
                 # print('server time was got:' + mytime)
-                passcode = 'KingPickler'
+                passcode, timeHold = 'KingPickler', 1 #Placeholders
+
                 # Create changeLog.db object to be added
                 new_data = changeLog(timeLog=mytime, username=user, password=passcode, setPH=setPH, setTemp=setTemp,
                                      timeHold=timeHold)

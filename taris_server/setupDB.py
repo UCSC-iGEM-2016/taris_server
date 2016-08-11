@@ -123,7 +123,6 @@ def getValues():
     allBioData = valSession.query(bioDec).all()
     return allBioData
 
-
 def getLast():
     '''
     Gets the last entry in the database.
@@ -134,6 +133,21 @@ def getLast():
     # last was inspired/copied from Stackoverflow user: miku, thank you miku
     last = lastSession.query(bioDec).order_by(bioDec.timeData.desc()).first()
     return last
+
+def getBetweenDatetime(begin, end):
+   '''
+   Gets entries between two DATETIMES
+   :param begin: DATETIME object startTime
+   :param end: DATETIME object startTime
+   :return: all entries between the two specified times
+   '''
+   bioDecSesh = makeBioreactorSession()
+   #betweenData = bioDecSesh.query(bioDec).filter(and_(bioDec.timeData <= begin, bioDec.timeData>=end))
+   #betweenData = bioDecSesh.query(bioDec).filter(bioDec.timeData.between(begin, end))
+   betweenData = bioDecSesh.query(bioDec).filter(bioDec.timeData >= begin).filter(bioDec.timeData <= end)
+
+   return betweenData
+
 
 ### Datetime object #####
 from datetime import datetime
@@ -167,7 +181,6 @@ class graphicBR:
         self.yVals = yVals
 
     def makeLineGraph(self):
-
         p = figure(plot_width=400, plot_height=400, x_axis_type='datetime', title=str(self.type) +" History")
         p.title_text_color = 'blue'
         p.xaxis.axis_label = 'Time (Zoom to Change)'
