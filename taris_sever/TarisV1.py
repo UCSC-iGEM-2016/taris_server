@@ -35,6 +35,8 @@ import time
 
 from setupDB import bioDec, changeLog, Base, logBase
 from setupDB import makeBioreactorSession, makeChangeSession, getProtocol, getValues, getLast
+from setupDB import graphicBR, mydatetimer
+
 
 app = Flask(__name__)
 
@@ -75,12 +77,6 @@ class Taris_SW:
             print('Error thown in second try block of / (homepage)')
         print('rendering index.html')
         return render_template('index.html', setPH = currentSetPH, setTemp = currentSetTemp, ph=currentpH, temp=currentTemp)
-
-    #############################################################################################
-    # This part of the program was inspired by Simba.
-    # /receive and /send aim to post data to the dictionary we have
-    #
-    # This is a test to see if we can make code the user enters save into the global dictionary/
 
     @app.route('/receive')
     def hello_world():
@@ -142,7 +138,6 @@ class Taris_SW:
 
     #############################################################################################
 
-
     @app.route('/console')
     def consolePage():
         '''GETS the console page via website'''
@@ -160,8 +155,23 @@ class Taris_SW:
 
     @app.route('/plotsPH')
     def phPage():
-
-        return render_template('plotsPH.html')
+        '''Make and display a pH plot vs time'''
+        print('pH plot requested')
+        allBRdata = getValues() # replace with last 2 mins, not all
+        print('got the all of BR data')
+        xVals, yVals = [], []
+        for data in allBRdata:
+            '''Put all relevant data in lists'''
+            yVals.append(data.pH)
+            print('append pH success')
+            datotimer = mydatetimer(data.timeData)
+            print("datotimer made")
+            xVals.append(datotimer)
+        # Graph lists using class found in setupDB
+        myGraphObject = graphicBR('pH', xVals, yVals)
+        pHScript, pHDiv = myGraphObject.makeLineGraph()
+        #print(pHDiv)
+        return render_template('plotsPHbokeh.html', pHDiv = pHDiv, pHScript = pHScript)
 
     @app.route('/plotsTemp')
     def tempPage():

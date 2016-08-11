@@ -134,4 +134,45 @@ def getLast():
     last = lastSession.query(bioDec).order_by(bioDec.timeData.desc()).first()
     return last
 
+### Datetime object #####
+from datetime import datetime
+
+def mydatetimer(mytime):
+    '''
+    Uses import datetime
+    :return: A datetime object that is from: time.strftime('%D %H:%M:%S') that is passed in.
+    '''
+    year = int(mytime.split(' ')[0][6:])
+    month = int(mytime.split(' ')[0][0:2])
+    day = int(mytime.split(' ')[0][3:5])
+    hour = int(mytime.split(' ')[1][0:2])
+    minute = int(mytime.split(' ')[1][3:5])
+    second = int(mytime.split(' ')[1][-2:])
+    mydatetime = datetime(year=year, month=month, day=day, hour=hour, minute=minute, second=second)
+    return mydatetime
+
+####### graphicBR Imports ########
+from bokeh.plotting import figure
+from bokeh.embed import components
+
+class graphicBR:
+    '''
+    This class aims to make graphs given a type, and two lists of data.
+    '''
+    def __init__(self, type, xVals, yVals, ):
+        self.type = type
+        self.xVals = xVals
+        self.yVals = yVals
+
+    def makeLineGraph(self):
+
+        p = figure(plot_width=400, plot_height=400, x_axis_type='datetime', title=str(self.type) +" History")
+        p.title_text_color = 'blue'
+        p.xaxis.axis_label = 'Time (Zoom to Change)'
+        p.xaxis.axis_label_text_color = 'blue'
+        p.yaxis.axis_label = str(self.type)
+        p.yaxis.axis_label_text_color = 'blue'
+        p.line(self.xVals, self.yVals, line_width=2)
+        script, div = components(p)
+        return script, div
 
