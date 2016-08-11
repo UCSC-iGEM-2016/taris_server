@@ -251,6 +251,8 @@ class Taris_SW:
         day = request.form.get('day')
         start = request.form.get('start')
         end = request.form.get('end')
+        interval = request.form.get('interval')
+
         print("requested data from: " + str(day) + " " + str(start) + " " + str(end))
         return 'success'
 
