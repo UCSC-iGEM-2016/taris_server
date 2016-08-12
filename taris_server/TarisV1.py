@@ -32,10 +32,11 @@
 from flask import Flask, render_template, request, jsonify
 import json
 import time
+from datetime import datetime
 
 from setupDB import bioDec, changeLog, Base, logBase
 from setupDB import makeBioreactorSession, makeChangeSession, getProtocol, getValues, getLast
-from setupDB import graphicBR, mydatetimer
+from setupDB import graphicBR, mydatetimer, getBetweenDatetime
 
 
 app = Flask(__name__)
@@ -155,6 +156,7 @@ class Taris_SW:
     @app.route('/plots')
     def plotPage():
         '''GETS the plot page'''
+        ## make both pH and temp plots and display ##
 
         return render_template('plots.html')
 
@@ -166,38 +168,37 @@ class Taris_SW:
     def phPage():
         '''Make and display a pH plot vs time'''
         print('pH plot requested')
-        allBRdata = getValues() # replace with last 2 mins, not all
-        #print('got the all of BR data')
+        minsOfData = 5 # How many minutes of data do you want? <-- Default
+        end =  mydatetimer(time.strftime('%D %H:%M:%S')) # End with the most current time
+        begin = datetime(year=end.year, month=end.month, day=end.day,
+                         hour=end.hour, minute=end.minute - minsOfData, second=end.second) # End - minsOfData minutes
+        lastTwoData = getBetweenDatetime(begin, end)
         xVals, yVals = [], []
-        for data in allBRdata:
+        for data in lastTwoData:
             '''Put all relevant data in lists'''
-            yVals.append(data.pH)
-            #print('append pH success')
-            datotimer = data.timeData
-            #print("datotimer made")
-            xVals.append(datotimer)
-        # Graph lists using class found in setupDB
+            yVals.append(data.pH) #TEST#print('append pH success')
+            xVals.append(data.timeData)
+        # Graph lists of data using class found in setupDB
         myGraphObject = graphicBR('pH', xVals, yVals)
-        pHScript, pHDiv = myGraphObject.makeLineGraph()
-        #print(pHDiv)
+        pHScript, pHDiv = myGraphObject.makeLineGraph() #TEST#print(pHDiv)
         return render_template('plotsPHbokeh.html', pHDiv = pHDiv, pHScript = pHScript)
 
     @app.route('/plotsTemp')
     def tempPage():
         '''Make and display a temp plot vs time'''
+        minsOfData = 5 # How many minutes of data do you want? <-- Default
         print('temp plot requested')
-        allBRdata = getValues() # replace with last 2 mins, not all
-        #print('got the all of BR data')
+        end =  mydatetimer(time.strftime('%D %H:%M:%S')) # End with the most current time
+        begin = datetime(year=end.year, month=end.month, day=end.day,
+                         hour=end.hour, minute=end.minute - minsOfData, second=end.second) # End - minsOfData minutes
+        lastTwoData = getBetweenDatetime(begin, end) #print('got last five mins of BR data')
         xVals, yVals = [], []
-        for data in allBRdata:
+        for data in lastTwoData:
             '''Put all relevant data in lists'''
-            yVals.append(data.temperature)
-            #print('append pH success')
-            datotimer = data.timeData
-            #print("datotimer made")
-            xVals.append(datotimer)
-        # Graph lists using class found in setupDB
-        myGraphObject = graphicBR('Temperature', xVals, yVals)
+            yVals.append(data.temperature) #TEST# print('append pH success')
+            xVals.append(data.timeData)
+        myGraphObject = graphicBR('Temperature', xVals, yVals) # Graph lists using class found in setupDB
+
         tempScript, tempDiv = myGraphObject.makeLineGraph()
         #print(pHDiv)
         return render_template('tempPlotBokeh.html', tempDiv = tempDiv, tempScript = tempScript)

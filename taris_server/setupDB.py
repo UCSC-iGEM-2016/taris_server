@@ -113,7 +113,6 @@ def getProtocol():
     last = session.query(changeLog).order_by(changeLog.timeLog.desc()).first()
     return last
 
-
 def getValues():
     '''
     WARNING : Gets all values of the database
@@ -175,13 +174,14 @@ class graphicBR:
     '''
     This class aims to make graphs given a type, and two lists of data.
     '''
-    def __init__(self, type, xVals, yVals, ):
+    def __init__(self, type, xVals, yVals, title = ': Last 5 Minutes History'):
         self.type = type
         self.xVals = xVals
         self.yVals = yVals
+        self.title = title
 
-    def makeLineGraph(self):
-        p = figure(plot_width=400, plot_height=400, x_axis_type='datetime', title=str(self.type) +" History")
+    def makeLineGraph(self, width=600, height=600):
+        p = figure(plot_width=width, plot_height=height, x_axis_type='datetime', title=str(self.type) + self.title)
         p.title_text_color = 'blue'
         p.xaxis.axis_label = 'Time (Zoom to Change)'
         p.xaxis.axis_label_text_color = 'blue'
