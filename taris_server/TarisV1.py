@@ -164,8 +164,26 @@ class Taris_SW:
     def plotPage():
         '''GETS the plot page'''
         ## make both pH and temp plots and display ##
+        print('Making pH plot and temp plot')
+        minsOfData = 5 # How many minutes of data do you want? <-- Default
+        end =  mydatetimer(time.strftime('%D %H:%M:%S')) # End with the most current time
+        begin = datetime(year=end.year, month=end.month, day=end.day,
+                         hour=end.hour, minute=end.minute - minsOfData, second=end.second) # End - minsOfData minutes
+        lastMinsOfData = getBetweenDatetime(begin, end) #list of db entries between the spedified times
+        xVals, pHVals, tempVals = [], [], []
+        for data in lastMinsOfData:
+            '''Put all relevant data in lists'''
+            pHVals.append(data.pH) #TEST#print('append pH success')
+            tempVals.append(data.temperature)
+            xVals.append(data.timeData)
+        pHGraphObject = graphicBR('pH', xVals, pHVals)
+        tempGraphObject = graphicBR('Temperature', xVals, tempVals) # Graph lists using class found in setupDB
+        pHScript, pHDiv = pHGraphObject.makeLineGraph() #TEST#print(pHDiv)
+        tempScript, tempDiv = tempGraphObject.makeLineGraph() #TEST#print(pHDiv)
 
-        return render_template('plots.html')
+        return render_template('plots.html', pHScript = pHScript, pHDiv = pHDiv,
+                               tempScript = tempScript, tempDiv = tempDiv
+                                )
 
     #############################################################
     #   The following methods contain the route calls for the graphic display if
