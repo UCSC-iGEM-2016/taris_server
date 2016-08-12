@@ -61,8 +61,8 @@ class Taris_SW:
             #print('last data ph and temp grabbed')
         except:
             print('Could not query data in /  (home)')
-            currentSetPH = 7
-            currentSetTemp = 50
+            currentSetPH = 0
+            currentSetTemp = 0
             print('setting the ph to 7 and temp to 50 because error in /')
             pass
         try: # Get the most rececnt bioreactor data
@@ -72,12 +72,19 @@ class Taris_SW:
                 print('No data has been sent from PI, please add to DB ')
             currentpH = lastBRdata.pH
             currentTemp = lastBRdata.temperature
-        except:
-            currentpH = 777
-            currentTemp = 777
+            inflowPWM = lastBRdata.inFlow
+            filtermLs = lastBRdata.purifier
+        except: #Set to zero; zero is the standard error.
+            currentpH = 0
+            currentTemp = 0
+            inflowPWM = 0
+            filtermLs = 0
             print('Error thown in second try block of / (homepage)')
         print('rendering index.html')
-        return render_template('index.html', setPH = currentSetPH, setTemp = currentSetTemp, ph=currentpH, temp=currentTemp)
+        return render_template('index.html', setPH = currentSetPH, setTemp = currentSetTemp,
+                               ph=currentpH, temp=currentTemp,
+                               inflowPWM = inflowPWM, filtermLs = filtermLs
+                               )
 
     @app.route('/currentPost')
     def hello_world():
@@ -124,9 +131,9 @@ class Taris_SW:
             mypH = realJSON['payload']['pH']
             NaOH = 1
             heater = 1
-            inFlow = 1
+            inFlow = realJSON['payload']['inMotor']['PWM']
             outFlow = 1
-            purifier = 1
+            purifier = realJSON['payload']['filterMotor']['current']
 
             new_data = bioDec(temperature=temp, pH=mypH, timeData=mytime,
                               NaOH=NaOH, heater=heater, inFlow=inFlow,

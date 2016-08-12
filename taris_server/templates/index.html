@@ -97,7 +97,7 @@
 
                 <div class="mdl-cell mdl-cell--3-col mdl-shadow--2dp">
 
-                    <div id="motor1" class="gauge_motor"></div>
+                    <div id="inflow" class="gauge_motor"></div>
 
                 </div>
 
@@ -205,11 +205,11 @@
     });
 
     var g5 = new JustGage({
-        id: "motor1",
-        value: 70,
+        id: "inflow",
+        value: {{inflowPWM}},
         min: 0,
-        max: 100,
-        title: "Inflow",
+        max: 1,
+        title: "Inflow PWM",
         levelColorsGradient: true,
         decimals: 1,
     });
@@ -229,17 +229,17 @@
         value: 5,
         min: 0,
         max: 100,
-        title: "NaOH Pump",
+        title: "NaOH Pump PWM",
         levelColorsGradient: true,
         decimals: 1,
     });
 
     var g5 = new JustGage({
         id: "motor4",
-        value: 10,
+        value: {{filtermLs}},
         min: 0,
         max: 100,
-        title: "Filter Pump",
+        title: "Filter Pump mL/min",
         levelColorsGradient: true,
         decimals: 1,
     });
