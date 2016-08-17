@@ -47,24 +47,6 @@
 
         <main class="mdl-layout__content">
 
-            <header class="mdl-layout__header">
-
-                 <form method="post" action="{{ url_for('homePage') }}">
-                    <div class="mdl-card__media" style="background:#616161" align="right">
-                        <!--<form action=" # ">-->
-                            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label ">
-                                <!--<form method="post" action="{{ url_for('homePage') }}">-->
-                                    <label class="mdl-textfield__label " for="ph" style="color:#FFFFFF">Login</label>
-                                    <input class="mdl-textfield__input " type="text" style="color:#FFFFFF" id="ph" name="ph" placeholder="Username">
-
-                                    <input class="mdl-textfield__input " type="text" style="color:#FFFFFF" id="ph" name="ph" placeholder="Password">
-                                    <input type="submit"
-                                    style="position: absolute; left: -9999px; width: 1px; height: 1px;"
-                                    tabindex="-1" />
-                            </div>
-
-            </header>
-
             <div class="mdl-layout__header-row"></div>
 
             <div class="mdl-grid content-grid ">
@@ -211,27 +193,27 @@
         max: 1,
         title: "Inflow PWM",
         levelColorsGradient: true,
-        decimals: 1,
+        decimals: 2,
     });
 
     var g5 = new JustGage({
         id: "motor2",
-        value: 30,
+        value: {{outflowPWM}},
         min: 0,
-        max: 100,
-        title: "Outflow",
+        max: 1,
+        title: "Outflow PWM",
         levelColorsGradient: true,
-        decimals: 1,
+        decimals: 2,
     });
 
     var g5 = new JustGage({
         id: "motor3",
-        value: 5,
+        value: {{basePWM}},
         min: 0,
-        max: 100,
+        max: 1,
         title: "NaOH Pump PWM",
         levelColorsGradient: true,
-        decimals: 1,
+        decimals: 2,
     });
 
     var g5 = new JustGage({
@@ -241,7 +223,7 @@
         max: 100,
         title: "Filter Pump mL/min",
         levelColorsGradient: true,
-        decimals: 1,
+        decimals: 2,
     });
 
 </script>

@@ -63,7 +63,7 @@ class Taris_SW:
             print('Could not query data in /  (home)')
             currentSetPH = 0
             currentSetTemp = 0
-            print('setting the ph to 7 and temp to 50 because error in /')
+            print('setting the ph to 0 and temp to 0 because error in /')
             pass
         try: # Get the most rececnt bioreactor data
             lastBRdata = getLast()
@@ -74,16 +74,20 @@ class Taris_SW:
             currentTemp = lastBRdata.temperature
             inflowPWM = lastBRdata.inFlow
             filtermLs = lastBRdata.purifier
+            outflowPWM = lastBRdata.outFlow
+            basePWM = lastBRdata.NaOH
         except: #Set to zero; zero is the standard error.
             currentpH = 0
             currentTemp = 0
             inflowPWM = 0
             filtermLs = 0
+            outflowPWM = 0
+            basePWM = 0
             print('Error thown in second try block of / (homepage)')
         print('rendering index.html')
         return render_template('index.html', setPH = currentSetPH, setTemp = currentSetTemp,
-                               ph=currentpH, temp=currentTemp,
-                               inflowPWM = inflowPWM, filtermLs = filtermLs
+                               ph=currentpH, temp=currentTemp, basePWM = basePWM,
+                               inflowPWM = inflowPWM, filtermLs = filtermLs, outflowPWM = outflowPWM
                                )
 
     @app.route('/currentPost')
@@ -129,10 +133,10 @@ class Taris_SW:
             mytime = mydatetimer(mytime)
             temp = realJSON['payload']['temp']
             mypH = realJSON['payload']['pH']
-            NaOH = 1
+            NaOH = realJSON['payload']['naohMotor']['PWM']
             heater = 1
             inFlow = realJSON['payload']['inMotor']['PWM']
-            outFlow = 1
+            outFlow = realJSON['payload']['outMotor']['PWM']
             purifier = realJSON['payload']['filterMotor']['current']
 
             new_data = bioDec(temperature=temp, pH=mypH, timeData=mytime,
