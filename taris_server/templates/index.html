@@ -107,56 +107,6 @@
             </div>
 
 
-            <!---------- UI to start bioreactor and other cool stuff --------->
-
-            <div class="mdl-grid" style="margin-top: 75px">
-
-                <div class="mdl-cell" style="background: #FFFFFF">
-                    <button id="start-button" class="mdl-button mdl-js-button mdl-button--raised" type="button">Start Bioreactor</button>
-
-                    <div id="notify-start" class="mdl-js-snackbar mdl-snackbar">
-                        <div class="mdl-snackbar__text"></div>
-                        <button class="mdl-snackbar__action" type="button"></button>
-                    </div>
-                    <script>
-                        (function() {
-
-                            'use strict';
-                            var snackbarContainer = document.querySelector('#notify-start');
-                            var startButton = document.querySelector('#start-button');
-
-                            startButton.style.backgroundColor = "#FAFAFA";
-                            startButton.addEventListener('click', function() {
-                                'use strict';
-                                var messageData = "";
-                                if (startButton.style.backgroundColor == "rgb(67, 160, 71)") {
-                                    startButton.style.backgroundColor = "#FAFAFA";
-                                    startButton.textContent = "START BIOREACTOR";
-                                    messageData = "Bioreactor stopped";
-                                } else {
-                                    startButton.style.backgroundColor = "#43A047";
-                                    startButton.textContent = "STOP BIOREACTOR";
-                                    messageData = "Bioreactor started";
-                                }
-                                
-                                var data = {
-                                    message: messageData,
-                                    timeout: 2000,
-                                };
-                                snackbarContainer.MaterialSnackbar.showSnackbar(data);
-                            });
-                        }());
-
-                    </script>
-                </div>
-            </div>
-
-
-
-
-
-
-
         </main>
 
 </body>
