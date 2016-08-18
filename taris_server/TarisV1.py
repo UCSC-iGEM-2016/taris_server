@@ -51,31 +51,29 @@ class Taris_SW:
         '''
         GETS and POSTS the main homepage of the website along with the data info
         :return: index.html with passed currentSetPH
+        #CHANGE_WHEN# The database names or columns are changed.
         '''
         print('Going to homePage (index.html)')
         try: # Get the last protocol that was changed by user (setTo values
-            lastData = getProtocol()
-            #print('got lastData')
+            lastData = getProtocol() #TEST# print('got lastData')
             currentSetPH = lastData.setPH
-            currentSetTemp = lastData.setTemp
-            #print('last data ph and temp grabbed')
+            currentSetTemp = lastData.setTemp #TEST#print('last data ph and temp grabbed')
         except:
-            print('Could not query data in /  (home)')
+            print('Could not one or more of: -- getProtocol, set ph, temp from last data')
             currentSetPH = 0
             currentSetTemp = 0
             print('setting the ph to 0 and temp to 0 because error in /')
             pass
         try: # Get the most rececnt bioreactor data
-            lastBRdata = getLast()
-            print('getLast succes')
+            lastBRdata = getLast() #TEST# print('getLast succes')
             if lastBRdata == None:
                 print('No data has been sent from PI, please add to DB ')
             currentpH = lastBRdata.pH
             currentTemp = lastBRdata.temperature
-            inflowPWM = lastBRdata.inFlow
-            filtermLs = lastBRdata.purifier
-            outflowPWM = lastBRdata.outFlow
-            basePWM = lastBRdata.NaOH
+            inflowPWM = lastBRdata.inPWM
+            filtermLs = lastBRdata.filterPWM
+            outflowPWM = lastBRdata.outPWM
+            basePWM = lastBRdata.naohPWM
         except: #Set to zero; zero is the standard error.
             currentpH = 0
             currentTemp = 0
@@ -84,7 +82,7 @@ class Taris_SW:
             outflowPWM = 0
             basePWM = 0
             print('Error thown in second try block of / (homepage)')
-        print('rendering index.html')
+        #TEST to see if render temp is wrong #print('rendering index.html')
         return render_template('index.html', setPH = currentSetPH, setTemp = currentSetTemp,
                                ph=currentpH, temp=currentTemp, basePWM = basePWM,
                                inflowPWM = inflowPWM, filtermLs = filtermLs, outflowPWM = outflowPWM
