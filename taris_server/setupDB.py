@@ -17,13 +17,12 @@
 #
 #
 ################################################################
-import os
-import sys
 from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy import create_engine
 from sqlalchemy.dialects.sqlite import DATETIME
+from sqlalchemy.dialects.postgres import ARRAY
 
 Base = declarative_base()
 
@@ -37,15 +36,19 @@ class bioDec(Base):
     # Create the columns that will be used to input data from the parsed JSON file.
     # Primary key is a field in a table which uniquely identifies each row/record in a
     # database table. Primary keys must contain unique values. A primary value column cannot
-    # have null values. A null value indicates that the value is unkown.
+    # have null values. A null value indicates that the value is unknown.
     timeData = Column('time', DATETIME, primary_key=True)
     temperature = Column('temperature', Integer)
     pH = Column('pH', Integer)
-    NaOH = Column('NaOH', Integer)
     heater = Column('heater', Integer)
-    inFlow = Column('inflow', Integer)
-    outFlow = Column('outFlow', Integer)
-    purifier = Column('purifier', Integer)
+    inPWM = Column('inPWM', Integer)
+    inCurrent = Column ('inCurrent', Integer)
+    outPWM = Column('outPWM', Integer)
+    outCurrent = Column ('outCurrent', Integer)
+    naohPWM = Column('naohPWM', Integer)
+    naohCurrent = Column('naohCurrent', Integer)
+    filterPWM = Column('filterPWM', Integer)
+    filterCurrent = Column('filterCurrent', Integer)
 
 
 logBase = declarative_base()

@@ -131,17 +131,25 @@ class Taris_SW:
             ######### Put things into the DB ###############--#
             mytime = time.strftime('%D %H:%M:%S')  # get server time
             mytime = mydatetimer(mytime)
+
             temp = realJSON['payload']['temp']
             mypH = realJSON['payload']['pH']
-            NaOH = realJSON['payload']['naohMotor']['PWM']
-            heater = 1
-            inFlow = realJSON['payload']['inMotor']['PWM']
-            outFlow = realJSON['payload']['outMotor']['PWM']
-            purifier = realJSON['payload']['filterMotor']['PWM']
 
-            new_data = bioDec(temperature=temp, pH=mypH, timeData=mytime,
-                              NaOH=NaOH, heater=heater, inFlow=inFlow,
-                              outFlow=outFlow, purifier=purifier)
+            inPWM = realJSON['payload']['inMotor']['PWM']
+            inCurrent = realJSON['payload']['inMotor']['current']
+
+            outPWM = realJSON['payload']['outMotor']['PWM']
+            outCurrent = realJSON['payload']['outMotor']['current']
+
+            naohPWM = realJSON['payload']['naohMotor']['PWM']
+            naohCurrent = realJSON['payload']['naohMotor']['current']
+
+            filterPWM = realJSON['payload']['filterMotor']['PWM']
+            filterCurrent = realJSON['payload']['filterMotor']['current']
+
+            new_data = bioDec(temperature= temp, pH = mypH, timeData= mytime, inPWM = inPWM, inCurrent= inCurrent,
+                              outPWM = outPWM, outCurrent = outCurrent, naohPWM = naohPWM, naohCurrent = naohCurrent,
+                              filterPWM = filterPWM, filterCurrent= filterCurrent)
             print('new data made')
             # mydatetime = mydatetimer(mytime)
             # new_data = Bioreactor_Data(temperature= temp,pH = mypH,timedata=mydatetime)
@@ -155,6 +163,7 @@ class Taris_SW:
 
         print('I finished currentRecieve')  # The server mangager now knows that this method has finished.
         return 'success'
+
 
     #############################################################################################
 
@@ -234,34 +243,7 @@ class Taris_SW:
 
     @app.route('/plotsMotors')
     def motorsPage():
-        '''Make and display a temp plot vs time'''
-        minsOfData = 5 # How many minutes of data do you want? <-- Default
-        print('motor plots requested')
-        end =  mydatetimer(time.strftime('%D %H:%M:%S')) # End with the most current time
-        begin = datetime(year=end.year, month=end.month, day=end.day,
-                         hour=end.hour, minute=end.minute - minsOfData, second=end.second) # End - minsOfData minutes
-        lastTwoData = getBetweenDatetime(begin, end) #print('got last five mins of BR data')
-        xVals, inflowPWMs , outflowPWMs, naohPWMs, filterPWMs = [], [], [], [], []
-        for data in lastTwoData:
-            '''Put all relevant data in lists'''
-            inflowPWMs.append(data.inFlow) #TEST# print('append pH success')
-            outflowPWMs.append(data.outFlow)
-            naohPWMs.append(data.NaOH)
-            filterPWMs.append(data.purifier)
-            xVals.append(data.timeData)
-        inFlowGraphObject = graphicBR('In Flow Motor PWM', xVals, inflowPWMs) # Graph lists using class found in setupDB
-        inFlowScript, inFlowDiv = inFlowGraphObject.makeLineGraph()
-        outFlowGO = graphicBR('Out Flow Motor PWM', xVals, outflowPWMs)
-        outFlowScript, outFlowDiv =outFlowGO.makeLineGraph()
-        naohGO = graphicBR('NaOH Motor PWM', xVals, naohPWMs)
-        naohScript, naohDiv = naohGO.makeLineGraph()
-        filterGO = graphicBR('Filter Motor PWM', xVals, outflowPWMs)
-        filterScript, filterDiv = filterGO.makeLineGraph()
-
-        return render_template('plotsMotor.html', inFlowDiv = inFlowDiv, inFlowScript = inFlowScript,
-                               naohDiv = naohDiv, naohScript = naohScript,
-                               outFlowDiv=outFlowDiv, outFlowScript=outFlowScript,
-                               filterDiv=filterDiv, filterScript= filterScript)
+        return render_template('plotsMotor.html')
 
     @app.route('/plotsHeater')
     def heaterPage():
