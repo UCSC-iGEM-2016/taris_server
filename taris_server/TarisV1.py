@@ -115,17 +115,11 @@ class Taris_SW:
         This post request is handled by loading the json data and committing it to the Bioreactor.DB
         :return: A string 'success' is returned as a check that the data was sent to the server
         '''
-        print('Recieved data at: /currentRecieve.')
+        #TEST# print('Recieved data at: /currentRecieve.')
         # Process a JSON. Put JSON data in a database.
         try:
-            myJSON = request.get_json(force=True)  # myJSON is string not json
-            print('request contained a json')
-            # myJSON.json()
-            realJSON = json.loads(myJSON)
-            print('json loaded')
-            # attachME = str(realJSON['payload']['pH'])
-            # print('myJSON[payload][pH] is:' + attachME) # insert to test
-
+            stringJSON = request.get_json(force=True)  # myJSON is string not json #TEST#print('request contained a json')
+            realJSON = json.loads(stringJSON) #TEST#print('json loaded')
             ######### Put things into the DB ###############--#
             mytime = time.strftime('%D %H:%M:%S')  # get server time
             mytime = mydatetimer(mytime)
@@ -135,31 +129,24 @@ class Taris_SW:
 
             inPWM = realJSON['payload']['inMotor']['PWM']
             inCurrent = realJSON['payload']['inMotor']['current']
-
             outPWM = realJSON['payload']['outMotor']['PWM']
             outCurrent = realJSON['payload']['outMotor']['current']
-
             naohPWM = realJSON['payload']['naohMotor']['PWM']
             naohCurrent = realJSON['payload']['naohMotor']['current']
-
             filterPWM = realJSON['payload']['filterMotor']['PWM']
             filterCurrent = realJSON['payload']['filterMotor']['current']
 
             new_data = bioDec(temperature= temp, pH = mypH, timeData= mytime, inPWM = inPWM, inCurrent= inCurrent,
                               outPWM = outPWM, outCurrent = outCurrent, naohPWM = naohPWM, naohCurrent = naohCurrent,
                               filterPWM = filterPWM, filterCurrent= filterCurrent)
-            print('new data made')
-            # mydatetime = mydatetimer(mytime)
-            # new_data = Bioreactor_Data(temperature= temp,pH = mypH,timedata=mydatetime)
+            #TEST# print('new data made')
             session = makeBioreactorSession()
             session.add(new_data)
-            # session.add(new_data)
             session.commit()
             print('Recieved data added to database.')
         except:
             print("currentRecieve was called but the data was not sent to the database.")
-
-        print('I finished currentRecieve')  # The server mangager now knows that this method has finished.
+        #TEST# print('I finished currentRecieve')  # Test case, if printed either the return is wrong or the POST call is.
         return 'success'
 
 
@@ -170,11 +157,12 @@ class Taris_SW:
         '''GETS the console page via website'''
         return render_template('console.html')
 
+
+    ################################### Data Visualization Tabs ####################################
     @app.route('/plots')
     def plotPage():
         '''GETS the plot page'''
-        ## make both pH and temp plots and display ##
-        print('Making pH plot and temp plot')
+        ## make both pH and temp plots and display ## #TEST# print('Making pH plot and temp plot')
         minsOfData = 5 # How many minutes of data do you want? <-- Default
         end =  mydatetimer(time.strftime('%D %H:%M:%S')) # End with the most current time
         begin = datetime(year=end.year, month=end.month, day=end.day,
@@ -190,19 +178,13 @@ class Taris_SW:
         tempGraphObject = graphicBR('Temperature', xVals, tempVals) # Graph lists using class found in setupDB
         pHScript, pHDiv = pHGraphObject.makeLineGraph() #TEST#print(pHDiv)
         tempScript, tempDiv = tempGraphObject.makeLineGraph() #TEST#print(pHDiv)
-
         return render_template('plots.html', pHScript = pHScript, pHDiv = pHDiv,
                                tempScript = tempScript, tempDiv = tempDiv
                                 )
 
-    #############################################################
-    #   The following methods contain the route calls for the graphic display if
-    #   we wish to continue moving in that direction
-
     @app.route('/plotsPH')
     def phPage():
-        '''Make and display a pH plot vs time'''
-        print('pH plot requested')
+        '''Make and display a pH plot vs time''' #TEST# print('pH plot requested')
         minsOfData = 5 # How many minutes of data do you want? <-- Default
         end =  mydatetimer(time.strftime('%D %H:%M:%S')) # End with the most current time
         begin = datetime(year=end.year, month=end.month, day=end.day,
@@ -221,8 +203,8 @@ class Taris_SW:
     @app.route('/plotsTemp')
     def tempPage():
         '''Make and display a temp plot vs time'''
+        #TEST# print('temp plot requested')
         minsOfData = 5 # How many minutes of data do you want? <-- Default
-        print('temp plot requested')
         end =  mydatetimer(time.strftime('%D %H:%M:%S')) # End with the most current time
         begin = datetime(year=end.year, month=end.month, day=end.day,
                          hour=end.hour, minute=end.minute - minsOfData, second=end.second) # End - minsOfData minutes
@@ -233,17 +215,13 @@ class Taris_SW:
             yVals.append(data.temperature) #TEST# print('append pH success')
             xVals.append(data.timeData)
         myGraphObject = graphicBR('Temperature', xVals, yVals) # Graph lists using class found in setupDB
-
-        tempScript, tempDiv = myGraphObject.makeLineGraph()
-        #print(pHDiv)
+        tempScript, tempDiv = myGraphObject.makeLineGraph() #TEST# print(pHDiv)
         return render_template('tempPlotBokeh.html', tempDiv = tempDiv, tempScript = tempScript)
-
 
     @app.route('/plotsMotors')
     def motorsPage():
-        '''Make and display a temp plot vs time'''
+        '''Make and display a temp plot vs time''' #TEST# print('motor plots requested')
         minsOfData = 5  # How many minutes of data do you want? <-- Default
-        #TEST# print('motor plots requested')
         end = mydatetimer(time.strftime('%D %H:%M:%S'))  # End with the most current time
         begin = datetime(year=end.year, month=end.month, day=end.day,
                          hour=end.hour, minute=end.minute - minsOfData, second=end.second)  # End - minsOfData minutes
@@ -271,14 +249,12 @@ class Taris_SW:
                                outFlowDiv=outFlowDiv, outFlowScript=outFlowScript,
                                filterDiv=filterDiv, filterScript=filterScript)
 
-        return render_template('plotsMotor.html')
-
     @app.route('/plotsHeater')
     def heaterPage():
-
+        # There is no data on the heater so nothing we can do here yet.
         return render_template('plotsHeater.html')
 
-    #############################################################
+    ################################### Data Visualization Tabs ####################################
 
     @app.route('/params')
     def paramsPage():
@@ -301,49 +277,37 @@ class Taris_SW:
         if the password is correct then the data will be committed to the changeLogDB.
         :return: A string 'success' is returned as a check that the data was processed to the db
         '''
-        try:
-            # try the passcode
+        try: # try the passcode
             if request.form.get('pass') == 'pavlesucks':  # Check to see if the user knows the password.
-                # If the user is validated by the password then
+                # If the user is validated by the password then do the following (get and set data):
                 setPH = request.form.get('pH')
                 setTemp = request.form.get('temp')
-                user = request.form.get('user')
-                # print('ph, temp, and hold time were got')
+                user = request.form.get('user') #TEST# print('ph, temp, and hold time were got')
                 ######### Put things into the DB ###############--#
-                mytime = time.strftime('%D %H:%M:%S')  # get server time in String form
-                # print('server time was got:' + mytime)
+                mytime = time.strftime('%D %H:%M:%S')  # get server time in String form #TEST# print('server time was got:' + mytime)
                 passcode, timeHold = 'KingPickler', 1 #Placeholders
 
                 # Create changeLog.db object to be added
                 new_data = changeLog(timeLog=mytime, username=user, password=passcode, setPH=setPH, setTemp=setTemp,
                                      timeHold=timeHold)
-                # print('new data made for changeLog.db')
-                session = makeChangeSession()  # Get a session from the method that makes sessions
-                # print('Making session to connect to changeLog.db')
-                session.add(new_data)  # Add data to changeLog database
-                # print('data added to changelog db, please commit')
-                # session.add(new_data)
+                #TEST# print('new data made for changeLog.db')
+                session = makeChangeSession()  # Get a session from the method that makes sessions #TEST# print('Making session to connect to changeLog.db')
+                session.add(new_data)  # Add data to changeLog database #TEST# print('data added to changelog db, please commit')
                 try:
-                    session.commit()
-                    # print('Recieved data added to changeLog.db.')
-                    currentUser = 'Colin'
+                    session.commit() #TEST# print('Recieved data added to changeLog.db.')
                     print('Set values/protocol changed by: ' + user)
                 except:
                     print('Error in committing data.')
-            else:
-                # The password is false
+            else: # The password is false
                 print('The password was incorrect')
-                # Play a gif that is about getting passwords wrong
         except:
             print('Data was not added because an error was thrown in /setProtocol')
-        print('I finished currentRecieve')  # The server mangager now knows that this method has finished.
+        #TEST# print('I finished currentRecieve')  # The server mangager now knows that this method has finished.
         return 'success'
-
 
     @app.route('/dataHistory')
     def dataHistory():
         return render_template('dataHistory.html')
-
 
     @app.route('/getHistoryData', methods=['POST'])
     def getHistroyData():
