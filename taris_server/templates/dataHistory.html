@@ -44,13 +44,13 @@
                           crossorigin="anonymous"></script>
 
                 <br>
-                Date<input type="text" id="day" placeholder = mm/dd/yyyy ></input>
+                Date<input type="text" id="day" placeholder = mm/dd/yy ></input>
                 <br>
-                Time Start<input type="text" id="start" placeholder= "hh:mm:ss Military Time" ></input>
+                Time Start<input type="text" id="start" placeholder= "hh:mm:ss (Military Time)" ></input>
                 <br>
-                Time End<input type="text" id="end" placeholder= "hh:mm:ss Military Time" ></input>
+                Time End<input type="text" id="end" placeholder= "hh:mm:ss (Military Time)" ></input>
                 <br>
-                Interval of Reads<input type="text" id="interval" placeholder= "hh:mm" ></input>
+                Interval of Reads<input type="text" id="interval" placeholder= "hh:mm:ss" ></input>
                 <br>
                 <button id="set">Get Data Between Time Range Specified</button>
 
@@ -60,7 +60,7 @@
                     $.ajax({
                       url: "getHistoryData",
                       method: "POST",
-                      data: {day: $("#day").val(), start: $("#start").val(), end:$("#end").val()},
+                      data: {day: $("#day").val(), start: $("#start").val(), end:$("#end").val(), interval:$("#interval").val()},
                       success: function(result){
                           if(result == "success"){
                               alert('request sent!')
@@ -69,7 +69,7 @@
                     });
                 });
                 </script>
-
+            
             <div class="mdl-layout__header-row"></div>
 
         </main>

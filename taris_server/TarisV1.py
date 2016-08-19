@@ -38,6 +38,9 @@ from setupDB import bioDec, changeLog, Base, logBase
 from setupDB import makeBioreactorSession, makeChangeSession, getProtocol, getValues, getLast
 from setupDB import graphicBR, mydatetimer, getBetweenDatetime
 
+import requests
+
+
 
 app = Flask(__name__)
 
@@ -311,13 +314,67 @@ class Taris_SW:
 
     @app.route('/getHistoryData', methods=['POST'])
     def getHistroyData():
-        #  data: {day: $("#day").val(), start: $("#start").val(), end:$("#end").val()},
+        #  must be in mm/dd/yy hh:mm:ss
         day = request.form.get('day')
         start = request.form.get('start')
         end = request.form.get('end')
-        interval = request.form.get('interval')
+        interval = request.form.get('interval')  # hh:mm:ss
+        intervalList = interval.split(':')
+        secondsOfInterval = int(intervalList[0])*3600 + int(intervalList[1])*60 + int(intervalList[2])
+        #TEST# print('requested these things')
+        beginDatetime = mydatetimer(day + ' ' + start)
+        endDatetime = mydatetimer(day + ' ' + end) #TEST# print('datetime objects made')
+        betweenData = getBetweenDatetime(beginDatetime, endDatetime)
 
-        print("requested data from: " + str(day) + " " + str(start) + " " + str(end))
+        filteredList = []
+        filterCounter = secondsOfInterval
+        for data in betweenData:
+            if filterCounter % secondsOfInterval == 0:
+                filteredList.append(data)
+            filterCounter += 1
+
+        i = 0
+        myJSONlist = []
+        for data in filteredList:
+            myJson = {
+                      "comment": "JSONified Data:" + str(i),
+                      "header": {
+                        "fromPItoServer_getSensorData": True,
+                        "date": str(data.timeData)
+                      },
+                      "payload": {
+                        "pH": data.pH,
+                        "temp": data.temperature,
+                        "inMotor": {
+                          "PWM": data.inPWM,
+                          "current": data.inCurrent
+                        },
+                        "outMotor": {
+                          "PWM": data.outPWM,
+                          "current": data.outCurrent
+                        },
+                        "naohMotor": {
+                          "PWM": data.naohPWM,
+                          "current": data.naohCurrent
+                        },
+                        "filterMotor": {
+                          "PWM": data.filterPWM,
+                          "current": data.filterCurrent
+                        },
+                        "parameters":{
+                           "des_pH" : 0,
+                           "des_temp" : 0
+                        }
+                      }
+                    }
+            myJSONlist.append(myJson)
+            i += 1
+        #TEST# print(myJSONlist)
+
+        # Post the myJSON list to a global variable
+        #  In a app.route get global variable and post myJSON list to wherever this:
+        #url = 'http://localhost:5000/dataRetrieve'
+        #requests.post(url, json=json.dumps(myJSONlist))
         return 'success'
 
 
