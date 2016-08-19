@@ -40,7 +40,7 @@ from setupDB import graphicBR, mydatetimer, getBetweenDatetime
 
 import requests
 
-
+historyLog = {} #Global Variable for all to use.
 
 app = Flask(__name__)
 
@@ -152,14 +152,12 @@ class Taris_SW:
         #TEST# print('I finished currentRecieve')  # Test case, if printed either the return is wrong or the POST call is.
         return 'success'
 
-
     #############################################################################################
 
     @app.route('/console')
     def consolePage():
         '''GETS the console page via website'''
         return render_template('console.html')
-
 
     ################################### Data Visualization Tabs ####################################
     @app.route('/plots')
@@ -375,8 +373,15 @@ class Taris_SW:
         #  In a app.route get global variable and post myJSON list to wherever this:
         #url = 'http://localhost:5000/dataRetrieve'
         #requests.post(url, json=json.dumps(myJSONlist))
+        global historyLog
+        historyLog['userRequestData'] = myJSONlist
         return 'success'
 
+    @app.route('/dataRetrieve')
+    def dataHold():
+        global historyLog
+        userReqData = historyLog['userRequestData']
+        return json.dumps(userReqData) # List may need reformatting #jsonify can jsonify a list
 
 myTaris = Taris_SW()
 
