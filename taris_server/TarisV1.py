@@ -1,10 +1,10 @@
 #####################################################################
 #
 # TarisV1.py:
-#   The first version of Taris pushed to the GitHub
+#   GitHub: https://github.com/UCSC-iGEM-2016/taris_server
 #
 # Date: July 27, 2016
-# Updated: continually (latest update: August 3, 2016)
+# Updated: Continually (latest update: August 22, 2016)
 #
 # Written by:
 #   Austin York
@@ -12,6 +12,8 @@
 #   Andrew Blair
 #   Henry Hinton
 #   Lon Blauvelt
+# Advisor:
+#   Simba Khadder
 #
 # Packages:
 #   JustGage - animated gauges using RaphaelJS
@@ -19,14 +21,15 @@
 #           Licensed under MIT.
 #           @author Bojan Djuricic (@Toorshia)
 #
-#
 # Description:
 #   Runs the web site that interacts with the TarisV1 bioreactor.
 #     The goal of Taris_SW is to be the server that allows users to change bioreactor
 #     controls as well as looks at current levels in the bioreactor
 #
-#   To Be Continued...
-#
+# Open Source Goal:
+#   This is a senior design project for the authors listed above.  The students listed are participating in a
+#  competition that requires the code to be published as open source.  We hope that you find this code valuable
+#  and it helps further your knowledge of the power of Python, creating a Flask server, and many other applications.
 #####################################################################
 
 from flask import Flask, render_template, request, jsonify
@@ -38,12 +41,9 @@ from setupDB import bioDec, changeLog, Base, logBase
 from setupDB import makeBioreactorSession, makeChangeSession, getProtocol, getValues, getLast
 from setupDB import graphicBR, mydatetimer, getBetweenDatetime
 
-import requests
-
-historyLog = {} #Global Variable for all to use.
+historyLog = {} #Global Variable for all to use. Esp used in the data history method.
 
 app = Flask(__name__)
-
 
 class Taris_SW:
     def __init__(self):
@@ -52,16 +52,18 @@ class Taris_SW:
     @app.route('/', methods=['GET'])
     def homePage():
         '''
-        GETS and POSTS the main homepage of the website along with the data info
-        :return: index.html with passed currentSetPH
+        Gets the main homepage of the website.  The method first gets the most recent bioreactor status to display
+        in gauges.  If it fails to get values it sets the gauges to zero - this allows the page to load rather than
+        crash if the load fails.
+        :return: index.html with current values
         #CHANGE_WHEN# The database names or columns are changed.
         '''
-        print('Going to homePage (index.html)')
+        # print('Going to homePage (index.html)') #A test case to see if the homepage can be directed to.
         try: # Get the last protocol that was changed by user (setTo values
             lastData = getProtocol() #TEST# print('got lastData')
             currentSetPH = lastData.setPH
-            currentSetTemp = lastData.setTemp #TEST#print('last data ph and temp grabbed')
-        except:
+            currentSetTemp = lastData.setTemp #TEST# print('last data ph and temp grabbed')
+        except: # Set the set pH and temp to 0 instead of crashing.
             print('Could not one or more of: -- getProtocol, set ph, temp from last data')
             currentSetPH = 0
             currentSetTemp = 0
@@ -77,45 +79,52 @@ class Taris_SW:
             filtermLs = lastBRdata.filterPWM
             outflowPWM = lastBRdata.outPWM
             basePWM = lastBRdata.naohPWM
-        except: #Set to zero; zero is the standard error.
+        except: #Set to zero if the loading fails; zero is the standard error.
             currentpH = 0
             currentTemp = 0
             inflowPWM = 0
             filtermLs = 0
             outflowPWM = 0
             basePWM = 0
-            print('Error thown in second try block of / (homepage)')
-        #TEST to see if render temp is wrong #print('rendering index.html')
+            print('Error thown in second try block of / (homepage)') # Print useful information when an error occurs.
+        #print('rendering index.html')   # TEST # to see if render temp is wrong, but everything else is complete
         return render_template('index.html', setPH = currentSetPH, setTemp = currentSetTemp,
                                ph=currentpH, temp=currentTemp, basePWM = basePWM,
                                inflowPWM = inflowPWM, filtermLs = filtermLs, outflowPWM = outflowPWM
                                )
 
     @app.route('/currentPost')
-    def hello_world():
-        try:
+    def currentPost():
+        '''
+        This is the URL that the bioreactor's raspberry pi reads from.  This method is used by the reactor to get
+        the most recent user set values.
+        :return: A JSON file that can be read by the pi. Contains set to values.
+        '''
+        try: # Load the last 'protocol' (last accepted change to the reactor) and pull the pH, temp, and user.
             lastProto = getProtocol()
             loadSetPH = lastProto.setPH
             loadSetTemp = lastProto.setTemp
             loadUser = lastProto.username
-        except:
-            print('Data failed to load from DB in /currentPost')
+        except: # If the load fails, set values to FAIL so the BR will not change values.
+            print('Data failed to load from DB in /currentPost') # Print useful error message
             loadSetTemp = 'FAIL'
             loadSetPH = 'FAIL'
+            loadUser = 'FAIL'
+        # postThis will be the format of the JSON that is read by the pi.
         postThis = {
             'comment' : "Hey bioreactor, this is the current desired things and user info.",
             'header' : {'toPIfromServer_sendSensorParams': True, 'date': time.strftime('%D %H:%M:%S')},
             'payload' : {'des_pH': loadSetPH, 'des_temp': loadSetTemp, 'user_changing': loadUser}
         }
-
-        print(postThis)
-        return jsonify(postThis)
+        #print(postThis) # A test to see what postThis looks like (what the recieving end will see).
+        return jsonify(postThis) # JSONify turns the Python object into a human readable object.
 
     @app.route('/currentRecieve', methods=["POST"])
     def currentRecieve():
         '''
-        currentRecieve is called when the Raspberry Pi sends a json to the server
-        This post request is handled by loading the json data and committing it to the Bioreactor.DB
+        currentRecieve is called when the Raspberry Pi sends a json to the server.
+        This post request is handled by loading the json data from request and committing it to the database
+        with the associated information, in our case: Bioreactor.db (SQLalchemy database).
         :return: A string 'success' is returned as a check that the data was sent to the server
         '''
         #TEST# print('Recieved data at: /currentRecieve.')
@@ -124,8 +133,8 @@ class Taris_SW:
             stringJSON = request.get_json(force=True)  # myJSON is string not json #TEST#print('request contained a json')
             realJSON = json.loads(stringJSON) #TEST#print('json loaded')
             ######### Put things into the DB ###############--#
-            mytime = time.strftime('%D %H:%M:%S')  # get server time
-            mytime = mydatetimer(mytime)
+            mytime = time.strftime('%D %H:%M:%S')  # Get server time.
+            mytime = mydatetimer(mytime) # Make a datetime object to be stored in the database.
 
             temp = realJSON['payload']['temp']
             mypH = realJSON['payload']['pH']
@@ -138,21 +147,22 @@ class Taris_SW:
             naohCurrent = realJSON['payload']['naohMotor']['current']
             filterPWM = realJSON['payload']['filterMotor']['PWM']
             filterCurrent = realJSON['payload']['filterMotor']['current']
-
+            # Create a new data item to be added to the database.
             new_data = bioDec(temperature= temp, pH = mypH, timeData= mytime, inPWM = inPWM, inCurrent= inCurrent,
                               outPWM = outPWM, outCurrent = outCurrent, naohPWM = naohPWM, naohCurrent = naohCurrent,
                               filterPWM = filterPWM, filterCurrent= filterCurrent)
             #TEST# print('new data made')
-            session = makeBioreactorSession()
-            session.add(new_data)
-            session.commit()
-            print('Recieved data added to database.')
+            session = makeBioreactorSession() # Open a session for the database.
+            session.add(new_data) # Add new data to the database.
+            session.commit() # Commit data into the database.
+            #print('Recieved data added to database.') #TEST to see if the try block is working.
         except:
-            print("currentRecieve was called but the data was not sent to the database.")
+            print("currentRecieve was called but the data was not sent to the database.") # Usefull error message
+            return 'failure' # Return failure allows for the calling method to see that the request was not handled as expected
         #TEST# print('I finished currentRecieve')  # Test case, if printed either the return is wrong or the POST call is.
-        return 'success'
+        return 'success' # If no error are thrown, then return 'success' (string) because the caller can read this.
 
-    #############################################################################################
+    ####################### Console page with debugging functionality ###################################
 
     @app.route('/console')
     def consolePage():
@@ -162,9 +172,10 @@ class Taris_SW:
     ################################### Data Visualization Tabs ####################################
     @app.route('/plots')
     def plotPage():
-        '''GETS the plot page'''
+        '''GETS the plot page
+        '''
         ## make both pH and temp plots and display ## #TEST# print('Making pH plot and temp plot')
-        minsOfData = 5 # How many minutes of data do you want? <-- Default
+        minsOfData = 5 # How many minutes of data do you want as your default history? <-- Default
         end =  mydatetimer(time.strftime('%D %H:%M:%S')) # End with the most current time
         begin = datetime(year=end.year, month=end.month, day=end.day,
                          hour=end.hour, minute=end.minute - minsOfData, second=end.second) # End - minsOfData minutes
@@ -179,6 +190,7 @@ class Taris_SW:
         tempGraphObject = graphicBR('Temperature', xVals, tempVals) # Graph lists using class found in setupDB
         pHScript, pHDiv = pHGraphObject.makeLineGraph() #TEST#print(pHDiv)
         tempScript, tempDiv = tempGraphObject.makeLineGraph() #TEST#print(pHDiv)
+        # Load up plots for the plots homepage and pass them in.
         return render_template('plots.html', pHScript = pHScript, pHDiv = pHDiv,
                                tempScript = tempScript, tempDiv = tempDiv
                                 )
@@ -221,64 +233,60 @@ class Taris_SW:
 
     @app.route('/plotsMotors')
     def motorsPage():
-        '''Make and display a temp plot vs time''' #TEST# print('motor plots requested')
+        '''Make and display all the motors' PWMs vs time''' #TEST# print('motor plots requested')
         minsOfData = 5  # How many minutes of data do you want? <-- Default
         end = mydatetimer(time.strftime('%D %H:%M:%S'))  # End with the most current time
         begin = datetime(year=end.year, month=end.month, day=end.day,
                          hour=end.hour, minute=end.minute - minsOfData, second=end.second)  # End - minsOfData minutes
-        lastTwoData = getBetweenDatetime(begin, end)  # print('got last five mins of BR data')
-        xVals, inflowPWMs, outflowPWMs, naohPWMs, filterPWMs = [], [], [], [], []
+        lastTwoData = getBetweenDatetime(begin, end)  #print('got last five mins of BR data') #TEST query call#
+        xVals, inflowPWMs, outflowPWMs, naohPWMs, filterPWMs = [], [], [], [], [] # Empty lists for x and y values.
         for data in lastTwoData:
             '''Put all relevant data in lists'''
             inflowPWMs.append(data.inPWM)  # TEST# print('append pH success')
             outflowPWMs.append(data.outPWM)
             naohPWMs.append(data.naohPWM)
             filterPWMs.append(data.filterPWM)
-            xVals.append(data.timeData)
-        inFlowGraphObject = graphicBR('In Flow Motor PWM', xVals,
-                                      inflowPWMs)  # Graph lists using class found in setupDB
-        inFlowScript, inFlowDiv = inFlowGraphObject.makeLineGraph()
+            xVals.append(data.timeData) # Time data: datetime object (graphicBR will only plot with a datetime object).
+        inFlowGraphObject = graphicBR('In Flow Motor PWM', xVals, inflowPWMs)  # Make graphic object for inflow PWM.
+        inFlowScript, inFlowDiv = inFlowGraphObject.makeLineGraph() # Make line graph from the object.
         outFlowGO = graphicBR('Out Flow Motor PWM', xVals, outflowPWMs)
         outFlowScript, outFlowDiv = outFlowGO.makeLineGraph()
         naohGO = graphicBR('NaOH Motor PWM', xVals, naohPWMs)
         naohScript, naohDiv = naohGO.makeLineGraph()
         filterGO = graphicBR('Filter Motor PWM', xVals, outflowPWMs)
         filterScript, filterDiv = filterGO.makeLineGraph()
-
+        # Pass all of the graphs of the motors to plotsMotor.html to display.
         return render_template('plotsMotor.html', inFlowDiv=inFlowDiv, inFlowScript=inFlowScript,
                                naohDiv=naohDiv, naohScript=naohScript,
                                outFlowDiv=outFlowDiv, outFlowScript=outFlowScript,
                                filterDiv=filterDiv, filterScript=filterScript)
 
-    @app.route('/plotsHeater')
-    def heaterPage():
-        # There is no data on the heater so nothing we can do here yet.
-        return render_template('plotsHeater.html')
-
-    ################################### Data Visualization Tabs ####################################
+    ################################### Data Visualization Tabs End ####################################
 
     @app.route('/params')
     def paramsPage():
-        '''GETS parameter page'''
-        try:
+        '''
+        The params page has a form in the html that is rendered that allows a user to make a change to the bioreactor.
+        :return: Render a template with the last set values as the default.
+        '''
+        try: # Load the last user set pH and temp.
             lastProto = getProtocol()
             loadSetPH = lastProto.setPH
             loadSetTemp = lastProto.setTemp
-        except:
-            print('Data failed to load from DB.')
+        except: # Print an error message to the server, do not crash by setting the temp and ph to fail.
+            print('Data failed to load from DB in /params.')
             loadSetTemp = 'FAIL'
             loadSetPH = 'FAIL'
-
         return render_template('testParams.html', setPH=loadSetPH, loadTemp=loadSetTemp)
 
     @app.route('/setProtocol', methods=['POST'])
     def setProtocol():
         '''
         setProtocol is the POST method of the paramas page.
-        if the password is correct then the data will be committed to the changeLogDB.
+        If the password is correct then the data will be committed to the changeLogDB.
         :return: A string 'success' is returned as a check that the data was processed to the db
         '''
-        try: # try the passcode
+        try: # Try the passcode and committing new data to the database.
             if request.form.get('pass') == 'pavlesucks':  # Check to see if the user knows the password.
                 # If the user is validated by the password then do the following (get and set data):
                 setPH = request.form.get('pH')
@@ -299,41 +307,47 @@ class Taris_SW:
                     print('Set values/protocol changed by: ' + user)
                 except:
                     print('Error in committing data.')
+                    return 'bad commit' #Informative return to caller.
             else: # The password is false
                 print('The password was incorrect')
+                return 'bad password' # Informative return to caller.
         except:
             print('Data was not added because an error was thrown in /setProtocol')
+            return 'exception hit' # Do not return sucess if an error was thrown.
         #TEST# print('I finished currentRecieve')  # The server mangager now knows that this method has finished.
-        return 'success'
+        return 'success' # If the password was correct, and the data was committed.
 
     @app.route('/dataHistory')
     def dataHistory():
+        '''
+        This tab is for a user to get back a bunch of JSON files in a list.
+        :return: Display dataHistory.html.  (Makes a call to /getHistoryData to get a list of JSONs)
+        '''
         return render_template('dataHistory.html')
 
     @app.route('/getHistoryData', methods=['POST'])
     def getHistroyData():
-        #  must be in mm/dd/yy hh:mm:ss
-        day = request.form.get('day')
-        start = request.form.get('start')
+        day = request.form.get('day') # Must be in: mm/dd/yy  to create a datetime object.
+        start = request.form.get('start') # Must be in: hh/mm/ss  to create a datetime object.
         end = request.form.get('end')
-        interval = request.form.get('interval')  # hh:mm:ss
-        intervalList = interval.split(':')
+        interval = request.form.get('interval')  # Only: hh:mm:ss because of the parsing that occurs below.
+        intervalList = interval.split(':') # Get a list to parse, change str to int and do math:
         secondsOfInterval = int(intervalList[0])*3600 + int(intervalList[1])*60 + int(intervalList[2])
         #TEST# print('requested these things')
         beginDatetime = mydatetimer(day + ' ' + start)
         endDatetime = mydatetimer(day + ' ' + end) #TEST# print('datetime objects made')
-        betweenData = getBetweenDatetime(beginDatetime, endDatetime)
+        betweenData = getBetweenDatetime(beginDatetime, endDatetime) # List of database objects between two times.
 
         filteredList = []
         filterCounter = secondsOfInterval
-        for data in betweenData:
-            if filterCounter % secondsOfInterval == 0:
+        for data in betweenData: # Filter by interval specified.
+            if filterCounter % secondsOfInterval == 0: # If division of the counter yeilds no remainder, add to db.
                 filteredList.append(data)
             filterCounter += 1
 
-        i = 0
+        i = 0 # A counter for the user to see how many data points they have.  Could be used to parse and plot.
         myJSONlist = []
-        for data in filteredList:
+        for data in filteredList: # Format each database entry like the PI send data.
             myJson = {
                       "comment": "JSONified Data:" + str(i),
                       "header": {
@@ -367,18 +381,17 @@ class Taris_SW:
                     }
             myJSONlist.append(myJson)
             i += 1
-        #TEST# print(myJSONlist)
-
-        # Post the myJSON list to a global variable
-        #  In a app.route get global variable and post myJSON list to wherever this:
-        #url = 'http://localhost:5000/dataRetrieve'
-        #requests.post(url, json=json.dumps(myJSONlist))
+        #print(myJSONlist) #TEST#
         global historyLog
-        historyLog['userRequestData'] = myJSONlist
+        historyLog['userRequestData'] = myJSONlist # Put list in global variable to read from a download link.
         return 'success'
 
     @app.route('/dataRetrieve')
     def dataHold():
+        '''
+        Called to download the JSON list.
+        :return: JSON list of requested data.
+        '''
         global historyLog
         userReqData = historyLog['userRequestData']
         return json.dumps(userReqData) # List may need reformatting #jsonify can jsonify a list
