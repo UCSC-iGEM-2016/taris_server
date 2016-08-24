@@ -32,7 +32,7 @@
 #  and it helps further your knowledge of the power of Python, creating a Flask server, and many other applications.
 #####################################################################
 
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, redirect
 import json
 import time
 from datetime import datetime
@@ -41,7 +41,11 @@ from setupDB import bioDec, changeLog, Base, logBase
 from setupDB import makeBioreactorSession, makeChangeSession, getProtocol, getValues, getLast
 from setupDB import graphicBR, mydatetimer, getBetweenDatetime
 
-historyLog = {} #Global Variable for all to use. Esp used in the data history method.
+historyLog = {'customGraphpH': False,
+              'customGraphtemp': False,
+              'customGraphmotors': False,
+              'customGraphall': False
+              } #Global Variable for all to use. Esp used in the data history method, and specified graphs!
 
 app = Flask(__name__)
 
@@ -172,94 +176,157 @@ class Taris_SW:
     ################################### Data Visualization Tabs ####################################
     @app.route('/plots')
     def plotPage():
-        '''GETS the plot page
+        '''
+        Makes all the plots, this is a tad slow.
+        Look at other graph routes to understand how graphs are made!
         '''
         ## make both pH and temp plots and display ## #TEST# print('Making pH plot and temp plot')
-        minsOfData = 5 # How many minutes of data do you want as your default history? <-- Default
-        end =  mydatetimer(time.strftime('%D %H:%M:%S')) # End with the most current time
-        begin = datetime(year=end.year, month=end.month, day=end.day,
-                         hour=end.hour, minute=end.minute - minsOfData, second=end.second) # End - minsOfData minutes
-        lastMinsOfData = getBetweenDatetime(begin, end) #list of db entries between the spedified times
+        global historyLog
+        if historyLog['customGraphall'] == False: # Check to see if user has requested a time range
+            minsOfData = 5 # How many minutes of data do you want as your default history? <-- Default
+            end =  mydatetimer(time.strftime('%D %H:%M:%S')) # End with the most current time
+            begin = datetime(year=end.year, month=end.month, day=end.day,
+                             hour=end.hour, minute=end.minute - minsOfData, second=end.second) # End - minsOfData minutes
+            histData = getBetweenDatetime(begin, end) #list of db entries between the spedified times
+            title  = ': Last 5 Minutes History'
+        if historyLog['customGraphall'] == True: # Check to see if user has requested a time range
+            histData = historyLog['histDataall']
+            title  = ': Requested History'
         xVals, pHVals, tempVals = [], [], []
-        for data in lastMinsOfData:
+        inflowPWMs, outflowPWMs, naohPWMs, filterPWMs = [], [], [], []
+        for data in histData:
             '''Put all relevant data in lists'''
             pHVals.append(data.pH) #TEST#print('append pH success')
             tempVals.append(data.temperature)
             xVals.append(data.timeData)
+            inflowPWMs.append(data.inPWM)  # TEST# print('append pH success')
+            outflowPWMs.append(data.outPWM)
+            naohPWMs.append(data.naohPWM)
+            filterPWMs.append(data.filterPWM)
         pHGraphObject = graphicBR('pH', xVals, pHVals)
         tempGraphObject = graphicBR('Temperature', xVals, tempVals) # Graph lists using class found in setupDB
-        pHScript, pHDiv = pHGraphObject.makeLineGraph() #TEST#print(pHDiv)
-        tempScript, tempDiv = tempGraphObject.makeLineGraph() #TEST#print(pHDiv)
+        pHScript, pHDiv = pHGraphObject.makeLineGraph(800, 250) #TEST#print(pHDiv)
+        tempScript, tempDiv = tempGraphObject.makeLineGraph(800, 250) #TEST#print(pHDiv)
         # Load up plots for the plots homepage and pass them in.
+        inFlowGraphObject = graphicBR('In Flow Motor PWM', xVals, inflowPWMs, title)  # Make graphic object for inflow PWM.
+        inFlowScript, inFlowDiv = inFlowGraphObject.makeLineGraph(800, 250) # Make line graph from the object.
+        outFlowGO = graphicBR('Out Flow Motor PWM', xVals, outflowPWMs, title)
+        outFlowScript, outFlowDiv = outFlowGO.makeLineGraph(800, 250)
+        naohGO = graphicBR('NaOH Motor PWM', xVals, naohPWMs, title)
+        naohScript, naohDiv = naohGO.makeLineGraph(800, 250)
+        filterGO = graphicBR('Filter Motor PWM', xVals, outflowPWMs, title)
+        filterScript, filterDiv = filterGO.makeLineGraph(800, 250)
+        # Pass all of the graphs of the motors to plotsMotor.html to display.
         return render_template('plots.html', pHScript = pHScript, pHDiv = pHDiv,
-                               tempScript = tempScript, tempDiv = tempDiv
+                               tempScript = tempScript, tempDiv = tempDiv, inFlowDiv=inFlowDiv, inFlowScript=inFlowScript,
+                               naohDiv=naohDiv, naohScript=naohScript,
+                               outFlowDiv=outFlowDiv, outFlowScript=outFlowScript,
+                               filterDiv=filterDiv, filterScript=filterScript
                                 )
 
     @app.route('/plotsPH')
     def phPage():
-        '''Make and display a pH plot vs time''' #TEST# print('pH plot requested')
-        minsOfData = 5 # How many minutes of data do you want? <-- Default
-        end =  mydatetimer(time.strftime('%D %H:%M:%S')) # End with the most current time
-        begin = datetime(year=end.year, month=end.month, day=end.day,
-                         hour=end.hour, minute=end.minute - minsOfData, second=end.second) # End - minsOfData minutes
-        lastTwoData = getBetweenDatetime(begin, end)
+        '''
+        Make and display a pH plot vs time.
+        :return: graph of pH, either specified or default of last 5 mins
+        ''' #TEST# print('pH plot requested')
+        global historyLog
+        if historyLog['customGraphpH'] == False: # Check to see if user has requested a time range, proceed if not
+            minsOfData = 5 # How many minutes of data do you want? <-- Default
+            end =  mydatetimer(time.strftime('%D %H:%M:%S')) # End with the most current time
+            begin = datetime(year=end.year, month=end.month, day=end.day,
+                             hour=end.hour, minute=end.minute - minsOfData, second=end.second) # End - minsOfData minutes
+            histData = getBetweenDatetime(begin, end)
+            title = ': Last 5 Minutes History'
+        if historyLog['customGraphpH'] == True: # Check to see if user has requested a time range, proceed if so
+            histData = historyLog['histDatapH']
+            title  = ': Requested History'
         xVals, yVals = [], []
-        for data in lastTwoData:
+        for data in histData:
             '''Put all relevant data in lists'''
             yVals.append(data.pH) #TEST#print('append pH success')
             xVals.append(data.timeData)
         # Graph lists of data using class found in setupDB
-        myGraphObject = graphicBR('pH', xVals, yVals)
-        pHScript, pHDiv = myGraphObject.makeLineGraph() #TEST#print(pHDiv)
+        myGraphObject = graphicBR('pH', xVals, yVals, title)
+        pHScript, pHDiv = myGraphObject.makeLineGraph(800, 300) #TEST#print(pHDiv)
         return render_template('plotsPHbokeh.html', pHDiv = pHDiv, pHScript = pHScript)
 
     @app.route('/plotsTemp')
     def tempPage():
         '''Make and display a temp plot vs time'''
         #TEST# print('temp plot requested')
-        minsOfData = 5 # How many minutes of data do you want? <-- Default
-        end =  mydatetimer(time.strftime('%D %H:%M:%S')) # End with the most current time
-        begin = datetime(year=end.year, month=end.month, day=end.day,
-                         hour=end.hour, minute=end.minute - minsOfData, second=end.second) # End - minsOfData minutes
-        lastTwoData = getBetweenDatetime(begin, end) #print('got last five mins of BR data')
+        if historyLog['customGraphtemp'] == False:
+            minsOfData = 5 # How many minutes of data do you want? <-- Default
+            end =  mydatetimer(time.strftime('%D %H:%M:%S')) # End with the most current time
+            begin = datetime(year=end.year, month=end.month, day=end.day,
+                             hour=end.hour, minute=end.minute - minsOfData, second=end.second) # End - minsOfData minutes
+            histData = getBetweenDatetime(begin, end) #print('got last five mins of BR data')
+            title  = ': Last 5 Minutes History'
+        if historyLog['customGraphtemp'] == True:
+            histData = historyLog['histDatatemp']
+            title  = ': Requested History'
         xVals, yVals = [], []
-        for data in lastTwoData:
+        for data in histData:
             '''Put all relevant data in lists'''
             yVals.append(data.temperature) #TEST# print('append pH success')
             xVals.append(data.timeData)
-        myGraphObject = graphicBR('Temperature', xVals, yVals) # Graph lists using class found in setupDB
-        tempScript, tempDiv = myGraphObject.makeLineGraph() #TEST# print(pHDiv)
+        myGraphObject = graphicBR('Temperature', xVals, yVals, title) # Graph lists using class found in setupDB
+        tempScript, tempDiv = myGraphObject.makeLineGraph(800, 300) #TEST# print(pHDiv)
         return render_template('tempPlotBokeh.html', tempDiv = tempDiv, tempScript = tempScript)
 
     @app.route('/plotsMotors')
     def motorsPage():
         '''Make and display all the motors' PWMs vs time''' #TEST# print('motor plots requested')
-        minsOfData = 5  # How many minutes of data do you want? <-- Default
-        end = mydatetimer(time.strftime('%D %H:%M:%S'))  # End with the most current time
-        begin = datetime(year=end.year, month=end.month, day=end.day,
-                         hour=end.hour, minute=end.minute - minsOfData, second=end.second)  # End - minsOfData minutes
-        lastTwoData = getBetweenDatetime(begin, end)  #print('got last five mins of BR data') #TEST query call#
+        if historyLog['customGraphmotors'] == True:
+            histData = historyLog['histDatamotors']
+            title  = ': Requested History'
+        if historyLog['customGraphmotors'] == False:
+            minsOfData = 5  # How many minutes of data do you want? <-- Default
+            end = mydatetimer(time.strftime('%D %H:%M:%S'))  # End with the most current time
+            begin = datetime(year=end.year, month=end.month, day=end.day,
+                             hour=end.hour, minute=end.minute - minsOfData, second=end.second)  # End - minsOfData minutes
+            histData = getBetweenDatetime(begin, end)  #print('got last five mins of BR data') #TEST query call#
+            title  = ': Last 5 Minutes History'
         xVals, inflowPWMs, outflowPWMs, naohPWMs, filterPWMs = [], [], [], [], [] # Empty lists for x and y values.
-        for data in lastTwoData:
+        for data in histData:
             '''Put all relevant data in lists'''
-            inflowPWMs.append(data.inPWM)  # TEST# print('append pH success')
+            inflowPWMs.append(data.inPWM)  # TEST# print('append value from histData success')
             outflowPWMs.append(data.outPWM)
             naohPWMs.append(data.naohPWM)
             filterPWMs.append(data.filterPWM)
             xVals.append(data.timeData) # Time data: datetime object (graphicBR will only plot with a datetime object).
-        inFlowGraphObject = graphicBR('In Flow Motor PWM', xVals, inflowPWMs)  # Make graphic object for inflow PWM.
-        inFlowScript, inFlowDiv = inFlowGraphObject.makeLineGraph() # Make line graph from the object.
-        outFlowGO = graphicBR('Out Flow Motor PWM', xVals, outflowPWMs)
-        outFlowScript, outFlowDiv = outFlowGO.makeLineGraph()
-        naohGO = graphicBR('NaOH Motor PWM', xVals, naohPWMs)
-        naohScript, naohDiv = naohGO.makeLineGraph()
-        filterGO = graphicBR('Filter Motor PWM', xVals, outflowPWMs)
-        filterScript, filterDiv = filterGO.makeLineGraph()
+        inFlowGraphObject = graphicBR('In Flow Motor PWM', xVals, inflowPWMs, title)  # Make graphic object for inflow PWM.
+        inFlowScript, inFlowDiv = inFlowGraphObject.makeLineGraph(800, 250) # Make line graph from the object.
+        outFlowGO = graphicBR('Out Flow Motor PWM', xVals, outflowPWMs, title)
+        outFlowScript, outFlowDiv = outFlowGO.makeLineGraph(800, 250)
+        naohGO = graphicBR('NaOH Motor PWM', xVals, naohPWMs, title)
+        naohScript, naohDiv = naohGO.makeLineGraph(800, 250)
+        filterGO = graphicBR('Filter Motor PWM', xVals, outflowPWMs, title)
+        filterScript, filterDiv = filterGO.makeLineGraph(800, 250)
         # Pass all of the graphs of the motors to plotsMotor.html to display.
         return render_template('plotsMotor.html', inFlowDiv=inFlowDiv, inFlowScript=inFlowScript,
                                naohDiv=naohDiv, naohScript=naohScript,
                                outFlowDiv=outFlowDiv, outFlowScript=outFlowScript,
                                filterDiv=filterDiv, filterScript=filterScript)
+
+    @app.route('/plotChange', methods=['POST'])
+    def plotChange():
+        start = request.form.get('start') # Must be in: hh/mm/ss  to create a datetime object.
+        end = request.form.get('end')
+        type = request.form.get('type') # Specify the type of graph that you want to change
+        startDT, endDT = mydatetimer(start), mydatetimer(end)
+        requestData = getBetweenDatetime(startDT, endDT)
+        global historyLog
+        historyLog['histData' + type] = requestData # only change the specific graph
+        historyLog['customGraph' + type] = True # only change the specific graph
+        return 'success'
+
+    @app.route('/defaultGraph', methods=['POST'])
+    def defaultGraph():
+        global historyLog #TEST# print('resetting')
+        type = request.form.get('type') #TEST# print('reset: ' + type)
+        historyLog['customGraph' + type] = False # only reset the specific graph
+        return 'success' #if using href rather than button: redirect('/plotsPH', code=302)
 
     ################################### Data Visualization Tabs End ####################################
 

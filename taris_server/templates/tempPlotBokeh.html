@@ -113,9 +113,53 @@
                     <section class="mdl-layout__tab-panel is-active" id="/plotsTemp">
                         <div class="page-content">
                             <!-- Your content goes here -->
-                        <br>
-                            {{tempDiv|safe}}
-                        <br>
+                            <script   src="https://code.jquery.com/jquery-3.1.0.min.js"
+                                  integrity="sha256-cCueBR6CsyA4/9szpPfrX3s49M9vUU5BgtiJj06wt/s="
+                                  crossorigin="anonymous"></script>
+
+                            To view a specific history complete the information below:
+                            <br>
+                            Date & Time Start<input type="text" id="start" placeholder= "mm/dd/yy hh:mm:ss (Military Time)" >
+                            <br>
+                            Date & Time End<input type="text" id="end" placeholder= "mm/dd/yy hh:mm:ss (Military Time)" >
+                            <br>
+                            <button id="set">Get Graph Between Time Range Specified</button>
+                            <button id ="defaultGraph">Reset to last five minutes</button>
+
+
+                            <!-----------------ajax test call to set parameters---------------->
+                            <script>
+                            $("#set").click(function(){
+                                $.ajax({
+                                  url: "plotChange",
+                                  method: "POST",
+                                  data: {start: $("#start").val(), end:$("#end").val(), type: "temp"},
+                                  success: function(result){
+                                      if(result == "success"){
+                                          location.reload();
+                                      }
+                                  }
+                                });
+                            });
+                            </script>
+                            <!-----------------ajax test call to set parameters---------------->
+                            <script>
+                            $("#defaultGraph").click(function(){
+                                $.ajax({
+                                  url: "defaultGraph",
+                                  method: "POST",
+                                  data: {type: "temp"},
+                                  success: function(result){
+                                      if(result == "success"){
+                                          location.reload();
+                                      }
+                                  }
+                                });
+                            });
+                            </script>
+                            <br>
+                                {{tempDiv|safe}}
+                            <br>
                         </div>
                     </section>
                     <section class="mdl-layout__tab-panel" id="/plotsMotor">
