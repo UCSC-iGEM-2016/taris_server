@@ -1,38 +1,40 @@
 #############################################################
 # setupDB.py:
-#   The first application that creates our Bioreactor and changeLog databases.
+#   This application creates a database Bioreactor.db; it contains methods that can access and commit new data to
+#  the database.
+#   This application also contains a helper class that does graphing and a helper method that converts a specific string
+#  to a DATETIME object.
 #
-#Date: August 8, 2016
+# Date: September 8, 2016
 #
-#Written by:
+# Written by:
 #   Andrew Blair
 #   Colin Hortman
 #   Austin York
 #   Lon Blauvelt
 #   Henry Hinton
 #
-#Description:
-#   This application creates two separate databases
-#
-#
-#
+# Description:
+#   This application creates one database with two tables.
 ################################################################
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship, sessionmaker
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 from sqlalchemy.dialects.sqlite import DATETIME
-from sqlalchemy.dialects.postgres import ARRAY
 
-Base = declarative_base()
+################################### Set Up the Database ###################################
 
-class bioDec(Base):
+bioreactorEngine = create_engine('sqlite:///Bioreactor.db') # Engines are used to create and access the database.
+Base = declarative_base() # A base is used to tie tables (classes that follow) to the same database.
+
+class brStatusHistory(Base): #brStatus means bioreactor status
     '''
-    bioDec creates a database that will hold the parsed JSON files sent from the raspberry pi.
+    brStatusHistory is a table that has a Base in the Bioreactor.db that will hold the parsed JSON files sent from the
+    raspberry pi.
+    It will hold every status that is sent from the bioreactor.
     '''
-    # Create the tablename that will be used to query the columns and rows later.
-    __tablename__ = 'bio_Data'
-
+    __tablename__ = 'br_status' # Tablename will be used to query the columns and rows later.
     # Create the columns that will be used to input data from the parsed JSON file.
     # Primary key is a field in a table which uniquely identifies each row/record in a
     # database table. Primary keys must contain unique values. A primary value column cannot
@@ -50,13 +52,13 @@ class bioDec(Base):
     filterPWM = Column('filterPWM', Integer)
     filterCurrent = Column('filterCurrent', Integer)
 
-
-logBase = declarative_base()
-class changeLog(logBase):
+class changeHistory(Base):
     '''
-	changeLog creates a database that will hold the updated parameters for the bioreactor.
+	changeHistory is a table responsible for storing all change requests.
+	It will only record requests that are verified by a password.
+	This table will be accessed to grab the updated parameters for the bioreactor. (Last Entry)
 	'''
-    __tablename__ = 'userInfo'
+    __tablename__ = 'changeEntry'
 
     # timeLog will take the server time when a user changes a parameter. Similar to timeData in bioDec.
     timeLog = Column('timeLog', String, primary_key=True)
@@ -66,20 +68,15 @@ class changeLog(logBase):
     setTemp = Column('setTemp', Integer)
     timeHold = Column('timeHold', Integer)
 
-# Create Databse
-bioreactorEngine = create_engine('sqlite:///Bioreactor.db')
-runBio = Base.metadata.create_all(bioreactorEngine)
-
-logEngine = create_engine('sqlite:///changeLog.db')
-changeLogEngine = logBase.metadata.create_all(logEngine)
-
-
-##########################$$$ Database Access Methods $$$##########################
-# These methods will imported into TarisV1.py with setupDB.py, allowing users to connect and work with the different databases.
+runBio = Base.metadata.create_all(bioreactorEngine) # Creates Database
+################################### End Database Set Up ###################################
+############################ Access and Query Database Methods ############################
+# These methods will imported into TarisV1.py with setupDB.py, allowing users to connect and work with the database
+# and the tables within.
 
 def makeBioreactorSession():
     '''
-    session maker for Bioreactor.db
+    A database session opens a connection to the database and allows for query or inserting data.
     return: database session for Bioreactor.db
     '''
     global bioreactorEngine
@@ -88,32 +85,15 @@ def makeBioreactorSession():
     BioreactorDBsession = DBSession()
     return BioreactorDBsession
 
-
-def makeChangeSession():
-    '''
-    session maker for changeLog.db
-    return: database session for changLog.db
-    '''
-    global logEngine
-    logBase.metadata.bind = logEngine
-    DBSession = sessionmaker(bind=logEngine)
-    changeSession = DBSession()
-    return changeSession
-
-
-
-#########
-#Access and Query the database for last entries for the two datbases.
-
 def getProtocol():
     '''
     Returns the last protocol that was committed. (most recent set ph and temp here)
-    :return: current protocol in the changelog DB
+    :return: Most recent approved protocol/parameters stored.
     '''
-    session = makeChangeSession()
+    session = makeBioreactorSession()
     # http://stackoverflow.com/questions/8551952/how-to-get-last-record
     # last was inspired/copied from Stackoverflow user: miku, thank you miku
-    last = session.query(changeLog).order_by(changeLog.timeLog.desc()).first()
+    last = session.query(changeHistory).order_by(changeHistory.timeLog.desc()).first()
     return last
 
 def getValues():
@@ -122,43 +102,41 @@ def getValues():
     return: all database entries
     '''
     valSession = makeBioreactorSession()
-    allBioData = valSession.query(bioDec).all()
+    allBioData = valSession.query(brStatusHistory).all()
     return allBioData
 
 def getLast():
     '''
     Gets the last entry in the database.
-    return: last entry in the databsee
+    return: last entry in the database
     '''
     lastSession = makeBioreactorSession()
     # http://stackoverflow.com/questions/8551952/how-to-get-last-record
     # last was inspired/copied from Stackoverflow user: miku, thank you miku
-    last = lastSession.query(bioDec).order_by(bioDec.timeData.desc()).first()
+    last = lastSession.query(brStatusHistory).order_by(brStatusHistory.timeData.desc()).first()
     return last
 
 def getBetweenDatetime(begin, end):
    '''
-   Gets entries between two DATETIMES
+   Gets entries between two DATETIMES in the brStatusHistory Table.
    :param begin: DATETIME object startTime
-   :param end: DATETIME object startTime
+   :param end: DATETIME object endTime
    :return: all entries between the two specified times
    '''
    bioDecSesh = makeBioreactorSession()
    #betweenData = bioDecSesh.query(bioDec).filter(and_(bioDec.timeData <= begin, bioDec.timeData>=end))
    #betweenData = bioDecSesh.query(bioDec).filter(bioDec.timeData.between(begin, end))
-   betweenData = bioDecSesh.query(bioDec).filter(bioDec.timeData >= begin).filter(bioDec.timeData <= end)
-
+   betweenData = bioDecSesh.query(brStatusHistory).filter(brStatusHistory.timeData >= begin).filter(brStatusHistory.timeData <= end)
    return betweenData
 
-
+################################### End Access and Query Database Methods ###################################
 ### Datetime object #####
 from datetime import datetime
 
 def mydatetimer(mytime):
     '''
-    Uses import datetime
-    Input String: from: time.strftime('%D %H:%M:%S')
-    :return: A datetime object of the time passed in.
+    A conversion to datetime from a string in this format : time.strftime('%D %H:%M:%S')
+    :return: A datetime object of the time/date passed in.
     '''
     year = int(mytime.split(' ')[0][6:])
     month = int(mytime.split(' ')[0][0:2])
@@ -169,7 +147,7 @@ def mydatetimer(mytime):
     mydatetime = datetime(year=year, month=month, day=day, hour=hour, minute=minute, second=second)
     return mydatetime
 
-####### graphicBR Imports ########
+################################### Graphing Methods ###################################
 from bokeh.plotting import figure
 from bokeh.embed import components
 
@@ -194,3 +172,4 @@ class graphicBR:
         script, div = components(p)
         return script, div
 
+################################### End Graphing Methods ###################################

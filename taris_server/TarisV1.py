@@ -37,8 +37,8 @@ import json
 import time
 from datetime import datetime
 
-from setupDB import bioDec, changeLog, Base, logBase
-from setupDB import makeBioreactorSession, makeChangeSession, getProtocol, getValues, getLast
+from setupDB import Base, changeHistory, brStatusHistory
+from setupDB import makeBioreactorSession, getProtocol, getValues, getLast
 from setupDB import graphicBR, mydatetimer, getBetweenDatetime
 
 historyLog = {'customGraphpH': False,
@@ -152,7 +152,7 @@ class Taris_SW:
             filterPWM = realJSON['payload']['filterMotor']['PWM']
             filterCurrent = realJSON['payload']['filterMotor']['current']
             # Create a new data item to be added to the database.
-            new_data = bioDec(temperature= temp, pH = mypH, timeData= mytime, inPWM = inPWM, inCurrent= inCurrent,
+            new_data = brStatusHistory(temperature= temp, pH = mypH, timeData= mytime, inPWM = inPWM, inCurrent= inCurrent,
                               outPWM = outPWM, outCurrent = outCurrent, naohPWM = naohPWM, naohCurrent = naohCurrent,
                               filterPWM = filterPWM, filterCurrent= filterCurrent)
             #TEST# print('new data made')
@@ -174,6 +174,7 @@ class Taris_SW:
         return render_template('console.html')
 
     ################################### Data Visualization Tabs ####################################
+
     @app.route('/plots')
     def plotPage():
         '''
@@ -364,10 +365,10 @@ class Taris_SW:
                 passcode, timeHold = 'KingPickler', 1 #Placeholders
 
                 # Create changeLog.db object to be added
-                new_data = changeLog(timeLog=mytime, username=user, password=passcode, setPH=setPH, setTemp=setTemp,
+                new_data = changeHistory(timeLog=mytime, username=user, password=passcode, setPH=setPH, setTemp=setTemp,
                                      timeHold=timeHold)
                 #TEST# print('new data made for changeLog.db')
-                session = makeChangeSession()  # Get a session from the method that makes sessions #TEST# print('Making session to connect to changeLog.db')
+                session = makeBioreactorSession()  # Get a session from the method that makes sessions #TEST# print('Making session to connect to changeLog.db')
                 session.add(new_data)  # Add data to changeLog database #TEST# print('data added to changelog db, please commit')
                 try:
                     session.commit() #TEST# print('Recieved data added to changeLog.db.')
