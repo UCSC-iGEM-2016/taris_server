@@ -467,4 +467,4 @@ class Taris_SW:
 myTaris = Taris_SW()
 
 if __name__ == '__main__':
-    app.run()
+    app.run(threaded=True)
