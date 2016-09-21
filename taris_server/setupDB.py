@@ -162,7 +162,7 @@ class graphicBR:
         self.title = title
 
     def makeLineGraph(self, width=600, height=600):
-        p = figure(plot_width=width, plot_height=height, x_axis_type='datetime', title=str(self.type) + self.title)
+        p = figure(plot_width=width, plot_height=height, responsive=True, x_axis_type='datetime', title=str(self.type) + self.title)
         p.title_text_color = 'blue'
         p.xaxis.axis_label = 'Time (Zoom to Change)'
         p.xaxis.axis_label_text_color = 'blue'
