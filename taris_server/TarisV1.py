@@ -186,9 +186,7 @@ class Taris_SW:
         if historyLog['customGraphall'] == False: # Check to see if user has requested a time range
             minsOfData = 5 # How many minutes of data do you want as your default history? <-- Default
             end =  mydatetimer(time.strftime('%D %H:%M:%S')) # End with the most current time
-            print('end is now')
             begin = end - timedelta(minutes=minsOfData)
-            print('I have some delta time')
             histData = getBetweenDatetime(begin, end) #list of db entries between the spedified times
             title  = ': Last 5 Minutes History'
         if historyLog['customGraphall'] == True: # Check to see if user has requested a time range
@@ -261,8 +259,6 @@ class Taris_SW:
             minsOfData = 5 # How many minutes of data do you want? <-- Default
             end =  mydatetimer(time.strftime('%D %H:%M:%S')) # End with the most current time
             begin = end - timedelta(minutes=minsOfData)
-                #datetime(year=end.year, month=end.month, day=end.day,
-                #             hour=end.hour, minute=minuteReal, second=end.second) # End - minsOfData minutes
             histData = getBetweenDatetime(begin, end) #print('got last five mins of BR data')
             title  = ': Last 5 Minutes History'
         if historyLog['customGraphtemp'] == True:
