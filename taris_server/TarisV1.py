@@ -217,7 +217,6 @@ class Taris_SW:
         filterGO = graphicBR('Filter Motor PWM', xVals, outflowPWMs, title)
         filterScript, filterDiv = filterGO.makeLineGraph(800, 250)
         # Pass all of the graphs of the motors to plotsMotor.html to display.
-        print('hello ending, now render')
         return render_template('plots.html', pHScript = pHScript, pHDiv = pHDiv,
                                tempScript = tempScript, tempDiv = tempDiv, inFlowDiv=inFlowDiv, inFlowScript=inFlowScript,
                                naohDiv=naohDiv, naohScript=naohScript,
