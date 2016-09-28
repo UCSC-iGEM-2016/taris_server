@@ -35,7 +35,7 @@
 from flask import Flask, render_template, request, jsonify, redirect
 import json
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from setupDB import Base, changeHistory, brStatusHistory
 from setupDB import makeBioreactorSession, getProtocol, getValues, getLast
@@ -186,8 +186,9 @@ class Taris_SW:
         if historyLog['customGraphall'] == False: # Check to see if user has requested a time range
             minsOfData = 5 # How many minutes of data do you want as your default history? <-- Default
             end =  mydatetimer(time.strftime('%D %H:%M:%S')) # End with the most current time
-            begin = datetime(year=end.year, month=end.month, day=end.day,
-                             hour=end.hour, minute=end.minute - minsOfData, second=end.second) # End - minsOfData minutes
+            print('end is now')
+            begin = end - timedelta(minutes=minsOfData)
+            print('I have some delta time')
             histData = getBetweenDatetime(begin, end) #list of db entries between the spedified times
             title  = ': Last 5 Minutes History'
         if historyLog['customGraphall'] == True: # Check to see if user has requested a time range
@@ -218,6 +219,7 @@ class Taris_SW:
         filterGO = graphicBR('Filter Motor PWM', xVals, outflowPWMs, title)
         filterScript, filterDiv = filterGO.makeLineGraph(800, 250)
         # Pass all of the graphs of the motors to plotsMotor.html to display.
+        print('hello ending, now render')
         return render_template('plots.html', pHScript = pHScript, pHDiv = pHDiv,
                                tempScript = tempScript, tempDiv = tempDiv, inFlowDiv=inFlowDiv, inFlowScript=inFlowScript,
                                naohDiv=naohDiv, naohScript=naohScript,
@@ -235,8 +237,7 @@ class Taris_SW:
         if historyLog['customGraphpH'] == False: # Check to see if user has requested a time range, proceed if not
             minsOfData = 5 # How many minutes of data do you want? <-- Default
             end =  mydatetimer(time.strftime('%D %H:%M:%S')) # End with the most current time
-            begin = datetime(year=end.year, month=end.month, day=end.day,
-                             hour=end.hour, minute=end.minute - minsOfData, second=end.second) # End - minsOfData minutes
+            begin = end - timedelta(minutes=minsOfData)
             histData = getBetweenDatetime(begin, end)
             title = ': Last 5 Minutes History'
         if historyLog['customGraphpH'] == True: # Check to see if user has requested a time range, proceed if so
@@ -259,8 +260,9 @@ class Taris_SW:
         if historyLog['customGraphtemp'] == False:
             minsOfData = 5 # How many minutes of data do you want? <-- Default
             end =  mydatetimer(time.strftime('%D %H:%M:%S')) # End with the most current time
-            begin = datetime(year=end.year, month=end.month, day=end.day,
-                             hour=end.hour, minute=end.minute - minsOfData, second=end.second) # End - minsOfData minutes
+            begin = end - timedelta(minutes=minsOfData)
+                #datetime(year=end.year, month=end.month, day=end.day,
+                #             hour=end.hour, minute=minuteReal, second=end.second) # End - minsOfData minutes
             histData = getBetweenDatetime(begin, end) #print('got last five mins of BR data')
             title  = ': Last 5 Minutes History'
         if historyLog['customGraphtemp'] == True:
@@ -284,8 +286,7 @@ class Taris_SW:
         if historyLog['customGraphmotors'] == False:
             minsOfData = 5  # How many minutes of data do you want? <-- Default
             end = mydatetimer(time.strftime('%D %H:%M:%S'))  # End with the most current time
-            begin = datetime(year=end.year, month=end.month, day=end.day,
-                             hour=end.hour, minute=end.minute - minsOfData, second=end.second)  # End - minsOfData minutes
+            begin = end - timedelta(minutes=minsOfData)
             histData = getBetweenDatetime(begin, end)  #print('got last five mins of BR data') #TEST query call#
             title  = ': Last 5 Minutes History'
         xVals, inflowPWMs, outflowPWMs, naohPWMs, filterPWMs = [], [], [], [], [] # Empty lists for x and y values.
