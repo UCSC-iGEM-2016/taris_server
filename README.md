@@ -20,10 +20,10 @@ Taris Server Code Explanation (TarisV1.py and setupDB.py and HTML5 templates)
 * setupDB contains classes that setup, read and write to the database.  It also contains helper functions for graphing and datetime manipulation.
 * templates folder contains the HTML5 files that are built using MDL (https://getmdl.io/)
 
-To understand the functionality of the server and how to add or remove functionality of this file, please become familiar with the following modules, database structures, and/or tutorials:
-Flask: Homepage, instalation, basic use: http://flask.pocoo.org/ AND through Step 6: http://flask.pocoo.org/docs/0.11/tutorial/
-SQLalchemy: Homepage http://www.sqlalchemy.org/ AND through Part 6: http://pythoncentral.io/introductory-tutorial-python-sqlalchemy/
-Bokeh (0.11.0): Homepage: http://bokeh.pydata.org/en/0.11.0/ AND at least: http://bokeh.pydata.org/en/0.11.0/docs/user_guide/plotting.html
+### Tutorials that should be followed prior to downloading code
+* Flask: Homepage, instalation, basic use: http://flask.pocoo.org/ AND through Step 6: http://flask.pocoo.org/docs/0.11/tutorial/
+* SQLalchemy: Homepage http://www.sqlalchemy.org/ AND through Part 6: http://pythoncentral.io/introductory-tutorial-python-sqlalchemy/
+* Bokeh (0.11.0): Homepage: http://bokeh.pydata.org/en/0.11.0/ AND at least: http://bokeh.pydata.org/en/0.11.0/docs/user_guide/plotting.html
  
 ## Data Flow, Storage and Recall
  A high level flow of information is: from some source (Raspberri Pi in our case), the source makes a POST request containing a json file.  This json file is parsed, information is collected and stored in the SQLalchemy database (Bioreactor.db), which contains a table called brStatusHistory (where the status of the bioreactor is stored).  First, in the TarisV1 Server file, there are several imports.  Second, There is a global dictionary, used entirely for user specifications.  Third, the main component is the Flask app.
@@ -31,7 +31,7 @@ Bokeh (0.11.0): Homepage: http://bokeh.pydata.org/en/0.11.0/ AND at least: http:
 We will skip directly to the third component because if you are reading farther than here, you are a programmer.  If you are not, you will find this dull and this is a good place to stop reading.  The program is comprised of an empty initialization and many routes.  The routes handle GET and POST requests from users and display our HTML web pages.  The POST requests are used for: collecting data, changing plot sizes, and setting the bioreactor to its conditions.
 
 # Three Sections
-## 1. Routes and Functionality (TarisV1.py)
+## 1. Routes POSTs and Their Functionality (TarisV1.py)
 ## 2. Database Creation and Access
 ## 3. HTML Layout and Design
 
