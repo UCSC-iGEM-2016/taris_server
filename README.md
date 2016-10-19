@@ -14,9 +14,11 @@ Many thanks to the iGEM software/bioreactor teams:
 * Lon Blauvelt
 
 
-Use and Explanation of the Taris Server Code (TarisV1.py and setupDB.py)
+Taris Server Code Explanation (TarisV1.py and setupDB.py and HTML5 templates)
 ---------------------
-Taris_SW is the name of the class that holds the Flask routes and functions, which is the backend of the server (found in TarisV1.py)
+* Taris_SW is the name of the class that holds the Flask routes and functions, which is the backend of the server (found in TarisV1.py)
+* setupDB contains classes that setup, read and write to the database.  It also contains helper functions for graphing and datetime manipulation.
+* templates folder contains the HTML5 files that are built using MDL (https://getmdl.io/)
 
 To understand the functionality of the server and how to add or remove functionality of this file, please become familiar with the following modules, database structures, and/or tutorials:
 Flask: Homepage, instalation, basic use: http://flask.pocoo.org/ AND through Step 6: http://flask.pocoo.org/docs/0.11/tutorial/
