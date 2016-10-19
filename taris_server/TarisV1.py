@@ -203,8 +203,8 @@ class Taris_SW:
             outflowPWMs.append(data.outPWM)
             naohPWMs.append(data.naohPWM)
             filterPWMs.append(data.filterPWM)
-        pHGraphObject = graphicBR('pH', xVals, pHVals)
-        tempGraphObject = graphicBR('Temperature', xVals, tempVals) # Graph lists using class found in setupDB
+        pHGraphObject = graphicBR('pH', xVals, pHVals, title)
+        tempGraphObject = graphicBR('Temperature', xVals, tempVals, title) # Graph lists using class found in setupDB
         pHScript, pHDiv = pHGraphObject.makeLineGraph(800, 250) #TEST#print(pHDiv)
         tempScript, tempDiv = tempGraphObject.makeLineGraph(800, 250) #TEST#print(pHDiv)
         # Load up plots for the plots homepage and pass them in.
