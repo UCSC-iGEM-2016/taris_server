@@ -23,7 +23,9 @@ Flask: Homepage, instalation, basic use: http://flask.pocoo.org/ AND through Ste
 SQLalchemy: Homepage http://www.sqlalchemy.org/ AND through Part 6: http://pythoncentral.io/introductory-tutorial-python-sqlalchemy/
 Bokeh (0.11.0): Homepage: http://bokeh.pydata.org/en/0.11.0/ AND at least: http://bokeh.pydata.org/en/0.11.0/docs/user_guide/plotting.html
  
-Data Flow, Storage and Recall:  A high level flow of information is: from some source (Raspberri Pi in our case), the source makes a POST request containing a json file.  This json file is parsed, information is collected and stored in the SQLalchemy database (Bioreactor.db), which contains a table called brStatusHistory (where the status of the bioreactor is stored).
+Data Flow, Storage and Recall  
+-----------------------------
+A high level flow of information is: from some source (Raspberri Pi in our case), the source makes a POST request containing a json file.  This json file is parsed, information is collected and stored in the SQLalchemy database (Bioreactor.db), which contains a table called brStatusHistory (where the status of the bioreactor is stored).
 
 First, in the TarisV1 Server file, there are several imports.  Second, There is a global dictionary, used entirely for user specifications.  Third, the main component is the Flask app.
 
@@ -32,10 +34,12 @@ We will skip directly to the third component because if you are reading farther 
 First we will discuss routes and their functionality.  Next we will dive into how POSTs work for reading and writing to the server.  There are three kinds of POSTs that will be discussed, two of these are communication with the bioreactor via the Raspberri Pi, the other is a POST that is called by an AJAX method within the params page.
 
 Route Usage and Passing Database Information
+---------------------------------------------
 	Simple route requests such as those solely rendering a template are easy and require just one, return render_template(prettypage.html).  This however, is rarely as simple as it gets.  Commonly, you will want to display, or add, values that are stored in a server database.  
 	Displaying data from the database (see database retrieval methods) in an html file is quite easy.  When a template is rendered, a number, string, or other objects can be passed through, into the html.  A name must be specified so that in the html it can be displayed.  For example, the home page ‘/’, look at the objects that are set in the render_template(‘index.html’, setPH = currentSetPH, setTemp = currentSetTemp, …).  setPH will become the name for the object that holds the value of currentSetPH.  currentSetPH is an object from Python that was grabbed from the database table ‘changeEntry’; it is the most recent pH that the user asked for.  By grabbing this value, and passing it through the render template, the site manager can now use ‘{{setPH}}’ inside of the index.html file.  This allows the server to display current and stored values from the database to a user.
 
-POSTing Usage and Reasoning
+Taris POSTing Usage and Intended Usefulnesss
+--------------------------------------------
 	The method POST is specified when a site manager would like to receive data from some source or change some server side object value.  In our case, we receive data from the Raspberri Pi that is hooked up to the circuit board that takes measurements.  What makes the POSTing really easy is JSON files.  JSON files are a file type that are used across many programming languages.  Between the method of POST and the highly used JSON, figuring out how to send and receive data to the bioreactor was not too hard.
 	The easiest explanation of when to use a POST is examples.  There will be three examples presented: /currentRecieve (where the bioreactor’s Rasp. Pi sends to) and /currentPost (where the bioreactor reads from, for updated temperature and pH settings).  Pull up the github for TarisV1.py to follow along and understan POST methods.
 	The Raspberri Pi (RP) is a powerful yet small computer that is capable of running feedback loops while sending current data to the server simultaneously.  The RP makes a POST request to the server and sends a JSON file; it POSTs this JSON to a place called ‘request.’  Looking inside the /currentRecieve method, inside the try block, the first executed line of code is stringJSON = request.get_json(force=True),what this means is get the JSON from the request handler and process it as a JSON.  The JSON is then loaded from its string form and you can follow the rest of the code to see how it is put into the database.  More discussion on how to put information into the database follows this section.
