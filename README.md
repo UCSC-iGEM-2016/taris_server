@@ -24,17 +24,14 @@ SQLalchemy: Homepage http://www.sqlalchemy.org/ AND through Part 6: http://pytho
 Bokeh (0.11.0): Homepage: http://bokeh.pydata.org/en/0.11.0/ AND at least: http://bokeh.pydata.org/en/0.11.0/docs/user_guide/plotting.html
  
 ## Data Flow, Storage and Recall
- A high level flow of information is: from some source (Raspberri Pi in our case), the source makes a POST request containing a json file.  This json file is parsed, information is collected and stored in the SQLalchemy database (Bioreactor.db), which contains a table called brStatusHistory (where the status of the bioreactor is stored).
+ A high level flow of information is: from some source (Raspberri Pi in our case), the source makes a POST request containing a json file.  This json file is parsed, information is collected and stored in the SQLalchemy database (Bioreactor.db), which contains a table called brStatusHistory (where the status of the bioreactor is stored).  First, in the TarisV1 Server file, there are several imports.  Second, There is a global dictionary, used entirely for user specifications.  Third, the main component is the Flask app.
 
-## First, in the TarisV1 Server file, there are several imports.  Second, There is a global dictionary, used entirely for user specifications.  Third, the main component is the Flask app.
+We will skip directly to the third component because if you are reading farther than here, you are a programmer.  If you are not, you will find this dull and this is a good place to stop reading.  The program is comprised of an empty initialization and many routes.  The routes handle GET and POST requests from users and display our HTML web pages.  The POST requests are used for: collecting data, changing plot sizes, and setting the bioreactor to its conditions.
 
-## We will skip directly to the third component because if you are reading farther than here, you are a programmer.  If you are not, you will find this dull and this is a good place to stop reading.  The program is comprised of an empty initialization and many routes.  The routes handle GET and POST requests from users and display our HTML web pages.  The POST requests are used for: collecting data, changing plot sizes, and setting the bioreactor to its conditions.
-
-### First we will discuss routes and their functionality.  Next we will dive into how POSTs work for reading and writing to the server.  There are three kinds of POSTs that will be discussed, two of these are communication with the bioreactor via the Raspberri Pi, the other is a POST that is called by an AJAX method within the params page.
-
-The second section will focus on setupDB.py, the database creator and accessor.
-
-The third section will focus on the HTML5 pages, the pretty pages you see.
+# Three Sections
+## 1. Routes and Functionality (TarisV1.py)
+## 2. Database Creation and Access
+## 3. HTML Layout and Design
 
 ## Route Usage and Passing Database Information
  Simple route requests such as those solely rendering a template are easy and require just one, return render_template(prettypage.html).  This however, is rarely as simple as it gets.  Commonly, you will want to display, or add, values that are stored in a server database.  
